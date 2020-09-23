@@ -77,14 +77,15 @@ def player_animate():
     if player.bottom >= screen_height:
         player.bottom = screen_height
 
-def opponent_animate(manual=0):
-    opponent.y += opponent_speed
-    if opponent.top <= 0:
-        opponent.top = 0
-    if opponent.bottom >= screen_height:
-        opponent.bottom = screen_height
+def opponent_animate(two_player):
+    if two_player == False:
+        opponent.y += opponent_speed
+        if opponent.top <= 0:
+            opponent.top = 0
+        if opponent.bottom >= screen_height:
+            opponent.bottom = screen_height
 
-    if manual == 1:
+    elif two_player == True:
         if opponent.top < ball.y:
             opponent.top += opponent_speed
         if opponent.top > ball.y:
@@ -119,8 +120,16 @@ def ball_start(screen):
         score_time = None
 
 
-def play_pong(screen, playerParam):
+def play_pong(scr, playerParam):
     global bg_color, ball, player, opponent, ball_speed_x, ball_speed_y, player_speed, opponent_speed, score_time, light_red, light_green, light_blue, light_grey, game_font, pong_sound, score_sound
+
+    # fetch screen params
+    screen_width = scr.screen_width
+    screen_height = scr.screen_height
+    screen = scr.screen
+
+    if playerParam.two_player == True: 
+        opponent_speed = 5
 
     # draw the ball
     ball = pygame.Rect(int(screen_width/2)-15, int(screen_height/2)-15, 20, 20)
@@ -178,7 +187,7 @@ def play_pong(screen, playerParam):
         else:
             ball_animate()
             player_animate()
-            opponent_animate()
+            opponent_animate(playerParam.two_player)
 
         # visuals
         screen.fill(bg_color)
@@ -202,14 +211,18 @@ def play_pong(screen, playerParam):
         pygame.display.flip()
         clock.tick(60)
 
+class Screen():
+    def __init__(self, screen, screen_width, screen_height):
+        self.screen = screen
+        self.screen_width = screen_width
+        self.screen_height = screen_height
 
 def main():
-    global bg_color, pong_sound, score_sound, game_font
     # SETUP
     pygame.mixer.pre_init(44100, -16, 2, 128)
     pygame.init()
 
-    screen = pygame.display.set_mode((screen_width, screen_height))
+    screen = Screen(pygame.display.set_mode((1200, 650)))
     pygame.display.set_caption('Pong')
     play_pong(screen, player)
 

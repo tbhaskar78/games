@@ -8,8 +8,6 @@ from pong import *
 
 BLUE = (106, 159, 181)
 WHITE = (255, 255, 255)
-screen_width = 1200
-screen_height = 650
 
 
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
@@ -18,6 +16,11 @@ def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     surface, _ = font.render(text=text, fgcolor=text_rgb, bgcolor=bg_rgb)
     return surface.convert_alpha()
 
+class Screen():
+    def __init__(self, screen, screen_width=1200, screen_height=650):
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.screen = screen
 
 class UIElement(Sprite):
     """ An user interface element that can be added to a surface """
@@ -85,33 +88,12 @@ class Player:
         self.current_level = current_level
 
 
-def main():
-    pygame.init()
-
-    screen = pygame.display.set_mode((1000, 640))
-    game_state = GameState.TITLE
-    player = Player()
-
-    while True:
-        if game_state == GameState.TITLE:
-            game_state = title_screen(screen)
-
-        if game_state == GameState.ONE_PLAYER:
-            player.two_player = False
-            game_state = play_pong(screen, player)
-
-        if game_state == GameState.TWO_PLAYER:
-            player.two_player = True
-            game_state = play_pong(screen, player)
-
-        if game_state == GameState.QUIT:
-            pygame.quit()
-            return
-
-
 def title_screen(screen):
+    screen_width = screen.screen_width
+    screen_height = screen.screen_height
+
     one_player = UIElement(
-        center_position=(400, 400),
+        center_position=(int(screen_width/2), int(screen_height/2-60)),
         font_size=30,
         bg_rgb=BLUE,
         text_rgb=WHITE,
@@ -119,7 +101,7 @@ def title_screen(screen):
         action=GameState.ONE_PLAYER,
     )
     two_player = UIElement(
-        center_position=(400, 400),
+        center_position=(int(screen_width/2), int(screen_height/2)),
         font_size=30,
         bg_rgb=BLUE,
         text_rgb=WHITE,
@@ -127,7 +109,7 @@ def title_screen(screen):
         action=GameState.TWO_PLAYER,
     )
     quit_btn = UIElement(
-        center_position=(400, 500),
+        center_position=(int(screen_width/2), int(screen_height/2+60)),
         font_size=30,
         bg_rgb=BLUE,
         text_rgb=WHITE,
@@ -135,13 +117,13 @@ def title_screen(screen):
         action=GameState.QUIT,
     )
 
-    buttons = RenderUpdates(one_player, two_player)
+    buttons = RenderUpdates(one_player, two_player, quit_btn)
 
-    return game_loop(screen, buttons)
+    return game_loop(screen.screen, buttons)
 
 
 def play_level(screen, player):
-    return_btn = UIElement(
+    one_player = UIElement(
         center_position=(140, 570),
         font_size=20,
         bg_rgb=BLUE,
@@ -150,7 +132,7 @@ def play_level(screen, player):
         action=GameState.TITLE,
     )
 
-    nextlevel_btn = UIElement(
+    two_player = UIElement(
         center_position=(400, 400),
         font_size=30,
         bg_rgb=BLUE,
@@ -159,7 +141,7 @@ def play_level(screen, player):
         action=GameState.TWO_PLAYER,
     )
 
-    buttons = RenderUpdates(return_btn, nextlevel_btn)
+    buttons = RenderUpdates(one_player, two_player)
 
     return game_loop(screen, buttons)
 
@@ -192,6 +174,29 @@ class GameState(Enum):
     ONE_PLAYER = 1
     TWO_PLAYER = 2
 
+def main():
+    pygame.init()
+    pygame.display.set_caption('Pong')
+
+    screen = Screen(pygame.display.set_mode((screen_width, screen_height)))
+    game_state = GameState.TITLE
+    player = Player()
+
+    while True:
+        if game_state == GameState.TITLE:
+            game_state = title_screen(screen)
+
+        if game_state == GameState.ONE_PLAYER:
+            player.two_player = False
+            game_state = play_pong(screen, player)
+
+        if game_state == GameState.TWO_PLAYER:
+            player.two_player = True
+            game_state = play_pong(screen, player)
+
+        if game_state == GameState.QUIT:
+            pygame.quit()
+            return
 
 if __name__ == "__main__":
     main()
