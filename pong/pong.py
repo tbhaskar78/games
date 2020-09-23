@@ -78,14 +78,14 @@ def player_animate():
         player.bottom = screen_height
 
 def opponent_animate(two_player):
-    if two_player == False:
+    if two_player == True:
         opponent.y += opponent_speed
         if opponent.top <= 0:
             opponent.top = 0
         if opponent.bottom >= screen_height:
             opponent.bottom = screen_height
 
-    elif two_player == True:
+    elif two_player == False:
         if opponent.top < ball.y:
             opponent.top += opponent_speed
         if opponent.top > ball.y:
@@ -128,7 +128,7 @@ def play_pong(scr, playerParam):
     screen_height = scr.screen_height
     screen = scr.screen
 
-    if playerParam.two_player == True: 
+    if playerParam.two_player == False: 
         opponent_speed = 5
 
     # draw the ball
@@ -224,6 +224,16 @@ def main():
 
     screen = Screen(pygame.display.set_mode((1200, 650)))
     pygame.display.set_caption('Pong')
+    rtn_button = UIElement(
+        center_position=(140, 570),
+        font_size=20,
+        bg_rgb=BLUE,
+        text_rgb=WHITE,
+        text="Return to main menu",
+        action=GameState.TITLE,
+    )
+    buttons = RenderUpdates(rtn_button)
+
     play_pong(screen, player)
 
 if __name__ == "__main__":

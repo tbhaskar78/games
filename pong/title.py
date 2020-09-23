@@ -143,7 +143,7 @@ def play_level(screen, player):
 
     buttons = RenderUpdates(one_player, two_player)
 
-    return game_loop(screen, buttons)
+    return game_loop(screen.screen, buttons)
 
 
 def game_loop(screen, buttons):
