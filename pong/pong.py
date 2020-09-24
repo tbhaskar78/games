@@ -1,49 +1,41 @@
-import pygame
-import pygame.freetype
-from pygame.sprite import Sprite
-from pygame.rect import Rect
-from enum import Enum
-from pygame.sprite import RenderUpdates
 from gameloop import *
 from common import *
 
-BLUE = (106, 159, 181)
-WHITE = (255, 255, 255)
 
 def title_screen(screen):
     screen_width = screen.screen_width
     screen_height = screen.screen_height
 
     one_player = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2-60)),
+        center_position=(int(screen_width/2), int(screen_height/2)),
         font_size=30,
-        bg_rgb=BLUE,
+        bg_rgb=BG_COLOR,
         text_rgb=WHITE,
         text="ONE PLAYER",
         action=GameState.ONE_PLAYER,
     )
     two_player = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2)),
+        center_position=(int(screen_width/2), int(screen_height/2)+60),
         font_size=30,
-        bg_rgb=BLUE,
+        bg_rgb=BG_COLOR,
         text_rgb=WHITE,
         text="TWO PLAYER",
         action=GameState.TWO_PLAYER,
     )
     quit_btn = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2+60)),
+        center_position=(int(screen_width/2), int(screen_height/2+180)),
         font_size=30,
-        bg_rgb=BLUE,
+        bg_rgb=BG_COLOR,
         text_rgb=WHITE,
-        text="Quit",
+        text="EXIT",
         action=GameState.QUIT,
     )
     help_btn = UIElement(
         center_position=(int(screen_width/2), int(screen_height/2+120)),
         font_size=30,
-        bg_rgb=BLUE,
+        bg_rgb=BG_COLOR,
         text_rgb=WHITE,
-        text="Help",
+        text="HELP",
         action=GameState.HELP,
     )
 
@@ -55,46 +47,91 @@ def game_loop(screen, buttons):
     """ Handles game loop until an action is return by a button in the
         buttons sprite renderer.
     """
+    background = pygame.Surface(screen.get_size())
+    background = background.convert()
+    background.fill(BG_COLOR)
+    clock = pygame.time.Clock()
+    head = Head()
+    sprite = pygame.sprite.RenderPlain(head)
+    redPdl = pygame.image.load("redPaddle.jpg")
+    greenPdl = pygame.image.load("greenPaddle.jpg")
+
     while True:
+        clock.tick(60)
+
         mouse_up = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_up = True
-        screen.fill(BLUE)
+            elif event.type == MOUSEBUTTONDOWN:
+               head.hit()
 
         for button in buttons:
             ui_action = button.update(pygame.mouse.get_pos(), mouse_up)
             if ui_action is not None:
                 return ui_action
 
+        sprite.update()
+        screen.blit(background, (0, 0))
+        sprite.draw(screen)
         buttons.draw(screen)
+        screen.blit(redPdl, (60, 10))
+        screen.blit(greenPdl, (900, 10))
+
+        line_width = 2
+        pygame.draw.rect(screen, WHITE, [0,5,SCREEN_WIDTH,line_width]) # top line
+        pygame.draw.rect(screen, WHITE, [0,SCREEN_HEIGHT-5,SCREEN_WIDTH,line_width]) # bottom line
+        pygame.draw.rect(screen, WHITE, [5,0,line_width, SCREEN_HEIGHT]) # left line
+        pygame.draw.rect(screen, WHITE, [SCREEN_WIDTH-5,0,line_width, SCREEN_HEIGHT+line_width]) # right line
         pygame.display.flip()
 
 def help_screen(scr):
     screen = scr.screen
-    HELP = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2)),
+    screen_width = scr.screen_width
+    screen_height = scr.screen_height
+    help_lt = UIElement(
+        center_position=(int(screen_width/2), int(screen_height/2)+30),
         font_size=30,
-        bg_rgb=BLUE,
+        bg_rgb=LIGHT_RED,
         text_rgb=WHITE,
-        text="Right Player : UP and DOWN keys and Left Player : W and S keys",
-        action=GameState.HELP,
+        text="LEFT PLAYER CONTROLS : W for Up and S key for Down",
+        action=GameState.HELP_LT,
+    )
+    help_rt = UIElement(
+        center_position=(int(screen_width/2), int(screen_height/2)+90),
+        font_size=30,
+        bg_rgb=LIGHT_GREEN,
+        text_rgb=WHITE,
+        text="RIGHT PLAYER CONTROLS : UP key for Up and DOWN key for Down",
+        action=GameState.HELP_RT,
+    )
+    back = UIElement(
+        center_position=(int(screen_width/2), int(screen_height/2+150)),
+        font_size=30,
+        bg_rgb=BG_COLOR,
+        text_rgb=WHITE,
+        text="GO BACK",
+        action=GameState.BACK,
     )
 
-    buttons = RenderUpdates(HELP)
+    buttons = RenderUpdates(help_lt, help_rt, back)
     return game_loop(screen, buttons)
 
 def main():
     pygame.init()
     pygame.display.set_caption('Pong')
 
-    screen = Screen(pygame.display.set_mode((screen_width, screen_height)))
+    screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)), SCREEN_WIDTH, SCREEN_HEIGHT)
     game_state = GameState.TITLE
     player = Player()
 
+
     while True:
+        if game_state == GameState.BACK:
+            game_state = title_screen(screen)
+
         if game_state == GameState.TITLE:
             game_state = title_screen(screen)
 
@@ -106,13 +143,17 @@ def main():
             player.two_player = True
             game_state = play_pong(screen, player)
 
+        if game_state == GameState.HELP_LT or game_state == GameState.HELP_RT:
+            doNothing = 1
+            game_state = GameState.TITLE
+
+        if game_state == GameState.HELP:
+            game_state = help_screen(screen)
+            game_state = GameState.TITLE
+
         if game_state == GameState.QUIT:
             pygame.quit()
             return
-
-        if game_state == GameState.HELP:
-            player.two_player = True
-            game_state = help_screen(screen)
 
 if __name__ == "__main__":
     main()

@@ -1,9 +1,3 @@
-import os
-import sys
-import random
-import pygame
-from pygame.locals import *
-from pygame.draw import rect
 from common import *
 
 os.putenv('SDL_AUDIODRIVER', 'alsa')
@@ -12,13 +6,9 @@ os.putenv('SDL_AUDIODEV', '/dev/audio')
 # setting up the main window
 len_of_paddle = 100
 player_speed = 0
-opponent_speed = 0 #5
-ball_speed_x = 6 * random.choice((1, -1))
-ball_speed_y = 6 * random.choice((1, -1))
-light_grey = (200, 200, 200)
-light_red = (200, 0, 0)
-light_green = (0, 200, 0)
-light_blue = (0, 0, 200)
+opponent_speed = 0 #PADDLE_SPEED
+ball_speed_x = BALL_SPEED * random.choice((1, -1))
+ball_speed_y = BALL_SPEED * random.choice((1, -1))
 
 # score
 player_score = 0
@@ -29,9 +19,8 @@ player = None
 opponent = None
 pong_sound = None
 score_sound = None
-bg_color = None
 
-def ball_animate():
+def ball_animate(screen_width, screen_height):
     global ball, ball_speed_x, ball_speed_y, player_score, opponent_score, score_time, pong_sound, score_sound
     #animate
     ball.x += ball_speed_x
@@ -69,14 +58,14 @@ def ball_animate():
         elif abs(ball.top - opponent.bottom) < 10 and ball_speed_y < 0:
             ball_speed_x *= -1
 
-def player_animate():
+def player_animate(screen_width, screen_height):
     player.y += player_speed
     if player.top <= 0:
         player.top = 0
     if player.bottom >= screen_height:
         player.bottom = screen_height
 
-def opponent_animate(two_player):
+def opponent_animate(two_player,screen_width, screen_height):
     if two_player == True:
         opponent.y += opponent_speed
         if opponent.top <= 0:
@@ -94,33 +83,33 @@ def opponent_animate(two_player):
         if opponent.bottom >= screen_height:
             opponent.bottom = screen_height
 
-def ball_start(screen):
-    global ball, ball_speed_x, ball_speed_y, score_time, game_font
+def ball_start(screen, screen_width, screen_height):
+    global score_time, ball, ball_speed_x, ball_speed_y, game_font
     current_time = pygame.time.get_ticks()
     ball.center = (int(screen_width/2), int(screen_height/2))
 
     # display a counter before starting the ball
     if current_time - score_time < 700:
-        three = game_font.render("3", False, light_red)
+        three = game_font.render("3", False, WHITE)
         screen.blit(three, (int(screen_width/2) - 10, int(screen_height/2) +20))
     elif 700 < current_time - score_time < 1400:
-        two = game_font.render("2", False, light_red)
+        two = game_font.render("2", False, WHITE)
         screen.blit(two, (int(screen_width/2) - 10, int(screen_height/2) +20))
     elif 1400 < current_time - score_time < 2100:
-        one = game_font.render("1", False, light_red)
+        one = game_font.render("1", False, WHITE)
         screen.blit(one, (int(screen_width/2) - 10, int(screen_height/2) +20))
 
 
     if current_time - score_time < 2100:
         ball_speed_x, ball_speed_y = 0, 0
     else:
-        ball_speed_y = 6*random.choice((1, -1))
-        ball_speed_x = 6*random.choice((1, -1))
+        ball_speed_y = BALL_SPEED*random.choice((1, -1))
+        ball_speed_x = BALL_SPEED*random.choice((1, -1))
         score_time = None
 
 
 def play_pong(scr, playerParam):
-    global bg_color, ball, player, opponent, ball_speed_x, ball_speed_y, player_speed, opponent_speed, score_time, light_red, light_green, light_blue, light_grey, game_font, pong_sound, score_sound
+    global ball, player, opponent, player_speed, opponent_speed, score_time, game_font, pong_sound, score_sound
 
     # fetch screen params
     screen_width = scr.screen_width
@@ -128,7 +117,7 @@ def play_pong(scr, playerParam):
     screen = scr.screen
 
     if playerParam.two_player == False: 
-        opponent_speed = 5
+        opponent_speed = PADDLE_SPEED
 
     # draw the ball
     ball = pygame.Rect(int(screen_width/2)-15, int(screen_height/2)-15, 20, 20)
@@ -137,10 +126,10 @@ def play_pong(scr, playerParam):
     opponent = pygame.Rect(10, int(screen_height/2)-70, 10, len_of_paddle)
     clock = pygame.time.Clock()
     game_font = pygame.font.Font("freesansbold.ttf", 32)
-    bg_color = pygame.Color('grey12')
     # sound
     pong_sound = pygame.mixer.Sound("pong.ogg")
     score_sound = pygame.mixer.Sound("score.ogg")
+    score_time = pygame.time.get_ticks()
 
     # LOOP forever
     while True:
@@ -152,60 +141,66 @@ def play_pong(scr, playerParam):
             # control player paddle
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_DOWN:
-                    player_speed += 5
+                    player_speed += PADDLE_SPEED
                 if event.key == pygame.K_UP:
-                    player_speed -= 5
+                    player_speed -= PADDLE_SPEED
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_DOWN:
-                    player_speed -= 5
+                    player_speed -= PADDLE_SPEED
                 if event.key == pygame.K_UP:
-                    player_speed += 5
+                    player_speed += PADDLE_SPEED
 
             # control opponent paddle
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s:
-                    opponent_speed += 5
+                    opponent_speed += PADDLE_SPEED
                 if event.key == pygame.K_w:
-                    opponent_speed -= 5
+                    opponent_speed -= PADDLE_SPEED
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_s:
-                    opponent_speed -= 5
+                    opponent_speed -= PADDLE_SPEED
                 if event.key == pygame.K_w:
-                    opponent_speed += 5
+                    opponent_speed += PADDLE_SPEED
 
         if opponent_score >= 21:
-            screen.fill(bg_color)
-            player_text = game_font.render("LEFT PLAYER WINS!", False, light_red)
+            screen.fill(BG_COLOR)
+            player_text = game_font.render("LEFT PLAYER WINS!", False, LIGHT_RED)
             screen.blit(player_text, (int(screen_width/2)-150, int(screen_height/2)))
             pygame.quit()
         elif player_score >= 21:
-            screen.fill(bg_color)
-            player_text = game_font.render("RIGHT PLAYER WINS!", False, light_red)
+            screen.fill(BG_COLOR)
+            player_text = game_font.render("RIGHT PLAYER WINS!", False, LIGHT_RED)
             screen.blit(player_text, (int(screen_width/2)-130,int(screen_height/2)))
             pygame.quit()
         else:
-            ball_animate()
-            player_animate()
-            opponent_animate(playerParam.two_player)
+            ball_animate(screen_width, screen_height)
+            player_animate(screen_width, screen_height)
+            opponent_animate(playerParam.two_player, screen_width, screen_height)
 
         # visuals
-        screen.fill(bg_color)
+        screen.fill(BG_COLOR)
         #pygame.draw.rect
-        rect(screen, light_green, player)
+        rect(screen, LIGHT_GREEN, player)
         #pygame.draw.rect
-        rect(screen, light_blue, opponent)
+        rect(screen, WHITE, opponent)
         pygame.draw.ellipse(screen, pygame.Color('orange'), ball)
-        pygame.draw.aaline(screen, light_grey, (screen_width/2, 0), (screen_width/2, screen_height))
+        pygame.draw.aaline(screen, LIGHT_GREY, (screen_width/2, 0), (screen_width/2, screen_height))
 
         # should always get called
         if score_time:
-            ball_start(screen)
+            ball_start(screen, screen_width, screen_height)
 
-        player_text = game_font.render(f"{player_score}", False, light_green)
+        player_text = game_font.render(f"{player_score}", False, LIGHT_GREEN)
         screen.blit(player_text, (int(screen_width/2)+int(screen_width/4),0+8))
 
-        opponent_text = game_font.render(f"{opponent_score}", False, light_blue)
+        opponent_text = game_font.render(f"{opponent_score}", False, WHITE)
         screen.blit(opponent_text, (int(screen_width/4)-16,0+8))
+
+        line_width = 2
+        pygame.draw.rect(screen, WHITE, [0,5,SCREEN_WIDTH,line_width]) # top line
+        pygame.draw.rect(screen, WHITE, [0,SCREEN_HEIGHT-5,SCREEN_WIDTH,line_width]) # bottom line
+        pygame.draw.rect(screen, WHITE, [5,0,line_width, SCREEN_HEIGHT]) # left line
+        pygame.draw.rect(screen, WHITE, [SCREEN_WIDTH-5,0,line_width, SCREEN_HEIGHT+line_width]) # right line
 
         pygame.display.flip()
         clock.tick(60)
@@ -225,6 +220,7 @@ def play_level(screen, player):
     return game_loop(screen.screen, buttons)
 
 def main():
+    global score_time
     # SETUP
     pygame.mixer.pre_init(44100, -16, 2, 128)
     pygame.init()

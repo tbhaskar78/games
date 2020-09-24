@@ -1,12 +1,26 @@
+import os
+import sys
+import random
+from enum import Enum
 import pygame
 import pygame.freetype
 from pygame.sprite import Sprite
 from pygame.rect import Rect
-from enum import Enum
+from pygame.locals import *
+from pygame.draw import rect
 from pygame.sprite import RenderUpdates
 
-screen_width = 1200
-screen_height = 650
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 650
+BG_COLOR = (23, 57, 75)
+LIGHT_GREY = (200, 200, 200)
+LIGHT_RED = (200, 0, 0)
+LIGHT_GREEN = (0, 200, 0)
+LIGHT_BLUE = (0, 0, 200)
+BLUE = (118, 155, 175)
+WHITE = (255, 255, 255)
+BALL_SPEED = 6
+PADDLE_SPEED = 5
 
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     """ Returns surface with text written on """
@@ -14,15 +28,94 @@ def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     surface, _ = font.render(text=text, fgcolor=text_rgb, bgcolor=bg_rgb)
     return surface.convert_alpha()
 
+def load_image(name, colorkey=None):
+    image = pygame.image.load(name)
+    image = image.convert()
+
+    return image, image.get_rect()
+
+class Head(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image, self.rect = load_image('head.jpg', -1)
+        screen = pygame.display.get_surface()
+        self.area = screen.get_rect()
+        self.STEP = BALL_SPEED
+        self.MARGIN = 300
+        self.xstep = self.STEP
+        self.ystep = 0
+        self.degrees = 0
+        self.direction = 'right'
+
+    def update(self):
+        if self.degrees:
+            self._spin()
+        else:
+            self._move()
+
+    def _move(self):
+        newpos = self.rect.move((self.xstep, self.ystep))
+
+        if self.direction == 'right' and self.rect.right > self.area.right - self.MARGIN:
+            self.xstep = -self.STEP
+            self.ystep = 3
+            self.direction = 'left'
+
+        if self.direction == 'left' and self.rect.left < self.area.left + self.MARGIN:
+            self.xstep = self.STEP
+            self.ystep = -3
+            self.direction = 'right'
+        '''
+        if self.direction == 'right' and self.rect.right > self.area.right - self.MARGIN:
+            self.xstep = -2
+            self.ystep = self.STEP 
+            self.direction = 'down'
+
+        if self.direction == 'down' and self.rect.bottom > self.area.bottom - self.MARGIN:
+            self.xstep = -self.STEP
+            self.ystep = 1
+            self.direction = 'left'
+
+        if self.direction == 'left' and self.rect.left < self.area.left + self.MARGIN:
+            self.xstep = 2
+            self.ystep = -self.STEP
+            self.direction = 'up'
+
+        if self.direction == 'up' and self.rect.top < self.area.top + self.MARGIN:
+            self.xstep = self.STEP
+            self.ystep = -1
+            self.direction = 'right'
+        '''
+
+        self.rect = newpos
+
+    def _spin(self):
+        center = self.rect.center
+        self.degrees = self.degrees + 12
+        if self.degrees >= 360:
+            self.degrees = 0
+            self.image = self.original
+        else:
+            self.image = pygame.transform.rotate(self.original, self.degrees)
+        self.rect = self.image.get_rect(center=center)
+
+    def hit(self):
+        if not self.degrees:
+            self.degrees = 1
+            self.original = self.image
+
 class GameState(Enum):
     QUIT = -1
     TITLE = 0
     ONE_PLAYER = 1
     TWO_PLAYER = 2
     HELP = 3
+    BACK = 4
+    HELP_LT = 5
+    HELP_RT = 6
 
 class Screen():
-    def __init__(self, screen, screen_width=1200, screen_height=650):
+    def __init__(self, screen, screen_width=SCREEN_WIDTH, screen_height=SCREEN_HEIGHT):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.screen = screen
