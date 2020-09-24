@@ -1,3 +1,5 @@
+# Author: Bhaskar Tallamraju
+# Date  : 24 Sep 2020
 import os
 import sys
 import random
@@ -113,6 +115,7 @@ class GameState(Enum):
     BACK = 4
     HELP_LT = 5
     HELP_RT = 6
+
 
 class Screen():
     def __init__(self, screen, screen_width=SCREEN_WIDTH, screen_height=SCREEN_HEIGHT):
