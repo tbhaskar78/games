@@ -39,7 +39,7 @@ def load_image(name, colorkey=None):
 class Head(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = load_image('head.jpg', -1)
+        self.image, self.rect = load_image('pong.jpg', -1)
         screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.STEP = BALL_SPEED
