@@ -1,3 +1,3 @@
 
 
-   ![PONG](title.png)
+   ![PONG](assets/title.png)
