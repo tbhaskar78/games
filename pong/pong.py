@@ -53,8 +53,8 @@ def game_loop(screen, buttons):
     clock = pygame.time.Clock()
     head = Head()
     sprite = pygame.sprite.RenderPlain(head)
-    redPdl = pygame.image.load("redPaddle.jpg")
-    greenPdl = pygame.image.load("greenPaddle.jpg")
+    redPdl = pygame.image.load("assets/redPaddle.jpg")
+    greenPdl = pygame.image.load("assets/greenPaddle.jpg")
 
     while True:
         clock.tick(60)

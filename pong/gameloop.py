@@ -127,8 +127,8 @@ def play_pong(scr, playerParam):
     clock = pygame.time.Clock()
     game_font = pygame.font.Font("freesansbold.ttf", 32)
     # sound
-    pong_sound = pygame.mixer.Sound("pong.ogg")
-    score_sound = pygame.mixer.Sound("score.ogg")
+    pong_sound = pygame.mixer.Sound("assets/pong.ogg")
+    score_sound = pygame.mixer.Sound("assets/score.ogg")
     score_time = pygame.time.get_ticks()
 
     # LOOP forever
