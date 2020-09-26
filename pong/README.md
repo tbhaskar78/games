@@ -8,4 +8,7 @@
 ## SnapShot of the title page
 
    ![PONG](assets/title.png)
+   
+## SnapShot of the game
+   ![PONG GAME](assets/gameExample.png)
 
