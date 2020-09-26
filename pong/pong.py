@@ -4,6 +4,7 @@
 #!/usr/bin/env python3
 from gameloop import *
 from common import *
+from os import path
 
 
 def title_screen(screen):
@@ -99,20 +100,26 @@ def game_loop(screen, buttons):
         pygame.draw.rect(screen, WHITE, [SCREEN_WIDTH-5,0,line_width, SCREEN_HEIGHT+line_width]) # right line
         pygame.display.flip()
 
-def show_topScore(scr, player, text="0:21"):
-    global best_left_score, best_right_score, left_wins, right_wins
+def show_topScore(scr, player, gameParam):
     Left_Name = player.Left_Name
     Right_Name = player.Right_Name
     game_font = pygame.font.Font("freesansbold.ttf", 32)
     scr.screen.fill(BG_COLOR)
-    player_text = game_font.render("TOP SCORE FOR "+Left_Name+" : "+str(best_left_score[0])+":"+str(best_left_score[1]), False, WHITE)
+    player_text = game_font.render("TOP SCORE FOR "+Left_Name+\
+                                   " : "+str(gameParam.best_left_score[0])+\
+                                   ":"+str(gameParam.best_left_score[1])+\
+                                   " AT LEVEL "+str(gameParam.best_left_level), False, WHITE)
     scr.screen.blit(player_text, (300,int(scr.screen_height/2)))
-    player_text = game_font.render("TOP SCORE FOR "+Right_Name+" : "+str(best_right_score[0])+":"+str(best_right_score[1]), False, WHITE)
+    player_text = game_font.render("TOP SCORE FOR "+Right_Name+" : "+\
+                                   str(gameParam.best_right_score[0])+\
+                                   ":"+str(gameParam.best_right_score[1])+\
+                                   " AT LEVEL "+str(gameParam.best_right_level), False, WHITE)
+
     scr.screen.blit(player_text, (300,int(scr.screen_height/2)+60))
 
     pygame.display.update()
 
-    time.sleep(2)
+    time.sleep(4)
 
     return GameState.TITLE
 
@@ -120,57 +127,71 @@ def help_screen(scr):
     screen = scr.screen
     screen_width = scr.screen_width
     screen_height = scr.screen_height
-    help_lt = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2)+30),
-        font_size=30,
-        bg_rgb=LIGHT_RED,
-        text_rgb=WHITE,
-        text="LEFT PLAYER CONTROLS : W for Up and S key for Down",
-        action=GameState.HELP_LT,
-    )
-    help_rt = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2)+90),
-        font_size=30,
-        bg_rgb=LIGHT_GREEN,
-        text_rgb=WHITE,
-        text="RIGHT PLAYER CONTROLS : UP key for Up and DOWN key for Down",
-        action=GameState.HELP_RT,
-    )
-    back = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2+150)),
-        font_size=30,
-        bg_rgb=BG_COLOR,
-        text_rgb=WHITE,
-        text="GO BACK",
-        action=GameState.BACK,
-    )
 
-    buttons = RenderUpdates(help_lt, help_rt, back)
-    return game_loop(screen, buttons)
+    game_font = pygame.font.Font("freesansbold.ttf", 32)
+    scr.screen.fill(BG_COLOR)
+    text0=B"INSTRUCTIONS: BEST OF 3 GAMES, WITH INCREASING DIFFICULTY"
+    help_rt = game_font.render(text0, False, WHITE)
+    scr.screen.blit(help_rt, (50,int(scr.screen_height/2)-60))
+    text1=B"* RIGHT PLAYER CONTROLS : UP key for Up and DOWN key for Down"
+    help_rt = game_font.render(text1, False, LIGHT_GREEN)
+    scr.screen.blit(help_rt, (50,int(scr.screen_height/2)))
+    text2=B"* LEFT PLAYER CONTROLS : W key for Up and S key for Down"
+    help_lt = game_font.render(text2, False, LIGHT_RED)
+    scr.screen.blit(help_lt, (50,int(scr.screen_height/2)+60))
+    text3=B"<< RETURN TO TITLE SCREEN"
+    help_lt = game_font.render(text3, False, WHITE)
+    scr.screen.blit(help_lt, (50,int(scr.screen_height/2)+120))
+    pygame.display.update()
+
+    while True:
+        mouse_up = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                mouse_up = True
+            if event.type == MOUSEBUTTONDOWN:
+                return
 
 def main():
-    global best_left_score, best_right_score, Left_Name, Right_Name
     pygame.init()
     pygame.display.set_caption('Pong')
 
     screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)), SCREEN_WIDTH, SCREEN_HEIGHT)
     game_state = GameState.TITLE
     player = Player()
+    gameParam = GameParams()
 
     # read the top score from file and config file
-    score = []
+    score_lt = []
+    score_rt = []
     config = []
-    for line in open('assets/__score'):
-        score.append(tuple(line.strip().split(',')))
-    best_left_score[0] = int(score[0][0])
-    best_left_score[1] = int(score[0][1])
-    best_right_score[0] = int(score[1][0])
-    best_right_score[1] = int(score[1][1])
 
     for line in open('config'):
         config.append(tuple(line.strip().split(':')))
     player.Left_Name = config[0][1]
     player.Right_Name = config[1][1]
+
+    filename = "assets/__score."+player.Left_Name
+    if path.exists(filename):
+        with open(filename) as f:
+            Lines = f.readlines()
+            for line in Lines:
+                score_lt.append(tuple(line.strip().split(',')))
+                gameParam.best_left_score[0] = (score_lt[0][0])
+                gameParam.best_left_score[1] = (score_lt[0][1])
+                gameParam.best_left_level = score_lt[0][2]
+
+    filename = "assets/__score."+player.Right_Name
+    if path.exists(filename):
+        with open(filename) as f:
+            Lines = f.readlines()
+            for line in Lines:
+                score_rt.append(tuple(line.strip().split(',')))
+                gameParam.best_right_score[0] = (score_rt[0][0])
+                gameParam.best_right_score[1] = (score_rt[0][1])
+                gameParam.best_right_level = score_rt[0][2]
 
     while True:
         if game_state == GameState.BACK:
@@ -181,14 +202,14 @@ def main():
 
         if game_state == GameState.ONE_PLAYER:
             player.two_player = False
-            game_state = play_pong(screen, player, game_state)
+            game_state = play_pong(screen, player, gameParam, game_state)
 
         if game_state == GameState.TWO_PLAYER:
             player.two_player = True
-            game_state = play_pong(screen, player, game_state)
+            game_state = play_pong(screen, player, gameParam, game_state)
 
         if game_state == GameState.TOPSCORE:
-            game_state = show_topScore(screen, player)
+            game_state = show_topScore(screen, player, gameParam)
 
         if game_state == GameState.HELP_LT or game_state == GameState.HELP_RT:
             doNothing = 1

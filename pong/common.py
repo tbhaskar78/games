@@ -16,7 +16,9 @@ from pygame.locals import *
 from pygame.draw import rect
 from pygame.sprite import RenderUpdates
 
-GAME_SCORE = 5
+GAME_SCORE = 11
+GAME_MAX_LEVEL = 3
+LENGTH_OF_PADDLE = 100
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 650
 BG_COLOR = (23, 57, 75)
@@ -29,33 +31,38 @@ WHITE = (255, 255, 255)
 BALL_SPEED = 6
 PADDLE_SPEED = 5
 
-best_left_score = [0, 0]
-best_right_score = [0, 0]
-left_wins = 0
-right_wins = 0
-Left_Name = None
-Right_Name = None
+class GameParams:
+    """ Stores game parameters """
+    def __init__(self):
+        self.level = 1
+        self.score_time = True
+        self.best_left_score = [0, 0]
+        self.best_right_score = [0, 0]
+        self.left_wins = 0
+        self.right_wins = 0
+        self.len_of_paddle = 100
+        self.pong_sound = None
+        self.score_sound = None
+        self.ball = None
+        self.ball_speed_x = BALL_SPEED * random.choice((1, -1))
+        self.ball_speed_y = BALL_SPEED * random.choice((1, -1))
+        self.best_left_level = 0
+        self.best_right_level = 0
 
-'''
-mpos = pygame.mouse.get_pos()
-DashedLine(screen,(255,255,255),(0,0,255),mpos,(screen_width/2,screen_height/2),4)
-def DashedLine(surface,color1,color2,pos1,pos2,increment):
-    YDiff = float(pos2[1]-pos1[1])
-    XDiff = float(pos2[0]-pos1[0])
-    Length = sqrt((XDiff**2)+(YDiff**2))
-    colornumber = 0
-    Color = color1
-    for pos in range(int(round(Length))):
-        Position = (  int(round(((pos/Length)*XDiff)+pos1[0])),  int(round(((pos/Length)*YDiff)+pos1[1]))  )
-        surface.set_at(Position,Color)
-        colornumber += 1
-        if colornumber == increment:
-            colornumber = 0
-            if Color == color1:
-                Color = color2
-            else:
-                Color = color1
-'''
+class Player:
+    """ Stores information about a player """
+    def __init__(self, score=0, two_player=False, current_level=1, Right_Name="RIGHT PLAYER", Left_Name="LEFT PLAYER"):
+        self.score = score
+        self.two_player = two_player
+        self.current_level = current_level
+        self.Left_Name = Left_Name
+        self.Right_Name = Right_Name
+        self.leftPlayer_speed = 0
+        self.rightPlayer_speed = 0
+        self.leftPlayer_score = 0
+        self.rightPlayer_score = 0
+        self.leftPlayer = None
+        self.rightPlayer = None
 
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     """ Returns surface with text written on """
@@ -103,7 +110,7 @@ class Head(pygame.sprite.Sprite):
         '''
         if self.direction == 'right' and self.rect.right > self.area.right - self.MARGIN:
             self.xstep = -2
-            self.ystep = self.STEP 
+            self.ystep = self.STEP
             self.direction = 'down'
 
         if self.direction == 'down' and self.rect.bottom > self.area.bottom - self.MARGIN:
@@ -156,15 +163,6 @@ class Screen():
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.screen = screen
-
-class Player:
-    """ Stores information about a player """
-    def __init__(self, score=0, two_player=False, current_level=1, Right_Name="RIGHT PLAYER", Left_Name="LEFT PLAYER"):
-        self.score = score
-        self.two_player = two_player
-        self.current_level = current_level
-        self.Left_Name = Left_Name
-        self.Right_Name = Right_Name
 
 class UIElement(Sprite):
     """ An user interface element that can be added to a surface """
