@@ -1,8 +1,12 @@
 # Author: Bhaskar Tallamraju
 # Date  : 24 Sep 2020
+
+#!/usr/bin/env python3
 import os
 import sys
+import time
 import random
+from math import *
 from enum import Enum
 import pygame
 import pygame.freetype
@@ -12,6 +16,7 @@ from pygame.locals import *
 from pygame.draw import rect
 from pygame.sprite import RenderUpdates
 
+GAME_SCORE = 5
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 650
 BG_COLOR = (23, 57, 75)
@@ -23,6 +28,34 @@ BLUE = (118, 155, 175)
 WHITE = (255, 255, 255)
 BALL_SPEED = 6
 PADDLE_SPEED = 5
+
+best_left_score = [0, 0]
+best_right_score = [0, 0]
+left_wins = 0
+right_wins = 0
+Left_Name = None
+Right_Name = None
+
+'''
+mpos = pygame.mouse.get_pos()
+DashedLine(screen,(255,255,255),(0,0,255),mpos,(screen_width/2,screen_height/2),4)
+def DashedLine(surface,color1,color2,pos1,pos2,increment):
+    YDiff = float(pos2[1]-pos1[1])
+    XDiff = float(pos2[0]-pos1[0])
+    Length = sqrt((XDiff**2)+(YDiff**2))
+    colornumber = 0
+    Color = color1
+    for pos in range(int(round(Length))):
+        Position = (  int(round(((pos/Length)*XDiff)+pos1[0])),  int(round(((pos/Length)*YDiff)+pos1[1]))  )
+        surface.set_at(Position,Color)
+        colornumber += 1
+        if colornumber == increment:
+            colornumber = 0
+            if Color == color1:
+                Color = color2
+            else:
+                Color = color1
+'''
 
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     """ Returns surface with text written on """
@@ -115,6 +148,7 @@ class GameState(Enum):
     BACK = 4
     HELP_LT = 5
     HELP_RT = 6
+    TOPSCORE = 7
 
 
 class Screen():
@@ -125,10 +159,12 @@ class Screen():
 
 class Player:
     """ Stores information about a player """
-    def __init__(self, score=0, two_player=False, current_level=1):
+    def __init__(self, score=0, two_player=False, current_level=1, Right_Name="RIGHT PLAYER", Left_Name="LEFT PLAYER"):
         self.score = score
         self.two_player = two_player
         self.current_level = current_level
+        self.Left_Name = Left_Name
+        self.Right_Name = Right_Name
 
 class UIElement(Sprite):
     """ An user interface element that can be added to a surface """

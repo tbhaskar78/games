@@ -1,3 +1,7 @@
+# Author: Bhaskar Tallamraju
+# Date  : 24 Sep 2020
+
+#!/usr/bin/env python3
 from common import *
 
 os.putenv('SDL_AUDIODRIVER', 'alsa')
@@ -19,6 +23,33 @@ player = None
 opponent = None
 pong_sound = None
 score_sound = None
+level = 1
+
+def levelUp(scr):
+    global level, len_of_paddle, game_font
+    screen = scr.screen
+    screen_width = scr.screen_width
+    screen_height = scr.screen_height
+    # change the parameters for level up
+    len_of_paddle -= 30
+
+    # display the LEVEL INCREASE
+    level += 1
+    if level > 3:
+        screen.fill(BG_COLOR)
+        game_fin = game_font.render("END", False, WHITE)
+        screen.blit(game_fin, (int(screen_width/2)-10,int(screen_height/2)))
+        pygame.display.flip()
+        time.sleep(4)
+        return
+    else:
+        screen.fill(BG_COLOR)
+        game_fin = game_font.render("LEVEL INCREASED TO : "+str(level), False, WHITE)
+        screen.blit(game_fin, (int(screen_width/2)-150,int(screen_height/2)))
+        pygame.display.flip()
+        time.sleep(4)
+        return
+
 
 def ball_animate(screen_width, screen_height):
     global ball, ball_speed_x, ball_speed_y, player_score, opponent_score, score_time, pong_sound, score_sound
@@ -108,16 +139,21 @@ def ball_start(screen, screen_width, screen_height):
         score_time = None
 
 
-def play_pong(scr, playerParam):
+def play_pong(scr, playerParam, game_state):
     global ball, player, opponent, player_speed, opponent_speed, score_time, game_font, pong_sound, score_sound
+    global level, opponent_score, player_score, len_of_paddle
+    global best_left_score, best_right_score, left_wins, right_wins
 
     # fetch screen params
     screen_width = scr.screen_width
     screen_height = scr.screen_height
     screen = scr.screen
 
-    if playerParam.two_player == False: 
+    if playerParam.two_player == False:
         opponent_speed = PADDLE_SPEED
+
+    Left_Name = playerParam.Left_Name
+    Right_Name = playerParam.Right_Name
 
     # draw the ball
     ball = pygame.Rect(int(screen_width/2)-15, int(screen_height/2)-15, 20, 20)
@@ -162,16 +198,69 @@ def play_pong(scr, playerParam):
                 if event.key == pygame.K_w:
                     opponent_speed += PADDLE_SPEED
 
-        if opponent_score >= 21:
+        if opponent_score >= GAME_SCORE:
+            if best_left_score[0] < opponent_score:
+                best_left_score[0] = opponent_score
+                best_left_score[1] = player_score
+            left_wins += 1
             screen.fill(BG_COLOR)
-            player_text = game_font.render("LEFT PLAYER WINS!", False, LIGHT_RED)
-            screen.blit(player_text, (int(screen_width/2)-150, int(screen_height/2)))
-            pygame.quit()
-        elif player_score >= 21:
+            if level < 3:
+                player_text = game_font.render(Left_Name+"  WINS!", False, WHITE)
+                screen.blit(player_text, (int(screen_width/2)-150, int(screen_height/2)))
+                pygame.display.flip()
+            player_score = 0
+            opponent_score = 0
+            time.sleep(2)
+            if level >= 3:
+                level = 1
+                len_of_paddle = 100
+                opponent_speed = 0 #PADDLE_SPEED
+                if left_wins > right_wins:
+                    player_text = game_font.render(Left_Name+"  WINS THE MATCH "+str(left_wins)+" - "+str(right_wins), False, WHITE)
+                else:
+                    player_text = game_font.render(Right_Name+"  WINS THE MATCH "+str(right_wins)+" - "+str(left_wins), False, WHITE)
+                screen.blit(player_text, (int(screen_width/4),int(screen_height/2)))
+                pygame.display.flip()
+                time.sleep(4)
+                left_wins = 0
+                right_wins = 0
+                return GameState.TITLE
+            if playerParam.two_player == False:
+                return GameState.TITLE
+            levelUp(scr)
+            #pygame.quit()
+            return game_state
+
+        elif player_score >= GAME_SCORE:
+            if best_right_score[1] < player_score:
+                best_right_score[0] = opponent_score
+                best_right_score[1] = player_score
+            right_wins += 1
             screen.fill(BG_COLOR)
-            player_text = game_font.render("RIGHT PLAYER WINS!", False, LIGHT_RED)
-            screen.blit(player_text, (int(screen_width/2)-130,int(screen_height/2)))
-            pygame.quit()
+            if level < 3:
+                player_text = game_font.render(Right_Name+"  WINS!", False, WHITE)
+                screen.blit(player_text, (int(screen_width/2)-150,int(screen_height/2)))
+                pygame.display.flip()
+            player_score = 0
+            opponent_score = 0
+            time.sleep(2)
+            if level >= 3:
+                level = 1
+                len_of_paddle = 100
+                opponent_speed = 0 #PADDLE_SPEED
+                if left_wins > right_wins:
+                    player_text = game_font.render(Left_Name+"  WINS THE MATCH "+str(left_wins)+" - "+str(right_wins), False, WHITE)
+                else:
+                    player_text = game_font.render(Right_Name+"  WINS THE MATCH "+str(right_wins)+" - "+str(left_wins), False, WHITE)
+                screen.blit(player_text, (int(screen_width/4),int(screen_height/2)))
+                pygame.display.flip()
+                time.sleep(4)
+                left_wins = 0
+                right_wins = 0
+                return GameState.TITLE
+            #pygame.quit()
+            levelUp(scr)
+            return game_state
         else:
             ball_animate(screen_width, screen_height)
             player_animate(screen_width, screen_height)
@@ -182,7 +271,7 @@ def play_pong(scr, playerParam):
         #pygame.draw.rect
         rect(screen, LIGHT_GREEN, player)
         #pygame.draw.rect
-        rect(screen, WHITE, opponent)
+        rect(screen, LIGHT_RED, opponent)
         pygame.draw.ellipse(screen, pygame.Color('orange'), ball)
         pygame.draw.aaline(screen, LIGHT_GREY, (screen_width/2, 0), (screen_width/2, screen_height))
 

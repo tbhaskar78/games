@@ -1,3 +1,7 @@
+# Author: Bhaskar Tallamraju
+# Date  : 24 Sep 2020
+
+#!/usr/bin/env python3
 from gameloop import *
 from common import *
 
@@ -22,24 +26,32 @@ def title_screen(screen):
         text="TWO PLAYER",
         action=GameState.TWO_PLAYER,
     )
-    quit_btn = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2+180)),
+    topscore_btn = UIElement(
+        center_position=(int(screen_width/2), int(screen_height/2+120)),
         font_size=30,
         bg_rgb=BG_COLOR,
         text_rgb=WHITE,
-        text="EXIT",
-        action=GameState.QUIT,
+        text="TOP SCORE",
+        action=GameState.TOPSCORE,
     )
     help_btn = UIElement(
-        center_position=(int(screen_width/2), int(screen_height/2+120)),
+        center_position=(int(screen_width/2), int(screen_height/2+180)),
         font_size=30,
         bg_rgb=BG_COLOR,
         text_rgb=WHITE,
         text="HELP",
         action=GameState.HELP,
     )
+    quit_btn = UIElement(
+        center_position=(int(screen_width/2), int(screen_height/2+240)),
+        font_size=30,
+        bg_rgb=BG_COLOR,
+        text_rgb=WHITE,
+        text="EXIT",
+        action=GameState.QUIT,
+    )
 
-    buttons = RenderUpdates(one_player, two_player, quit_btn, help_btn)
+    buttons = RenderUpdates(one_player, two_player, topscore_btn, quit_btn, help_btn)
 
     return game_loop(screen.screen, buttons)
 
@@ -87,6 +99,23 @@ def game_loop(screen, buttons):
         pygame.draw.rect(screen, WHITE, [SCREEN_WIDTH-5,0,line_width, SCREEN_HEIGHT+line_width]) # right line
         pygame.display.flip()
 
+def show_topScore(scr, player, text="0:21"):
+    global best_left_score, best_right_score, left_wins, right_wins
+    Left_Name = player.Left_Name
+    Right_Name = player.Right_Name
+    game_font = pygame.font.Font("freesansbold.ttf", 32)
+    scr.screen.fill(BG_COLOR)
+    player_text = game_font.render("TOP SCORE FOR "+Left_Name+" : "+str(best_left_score[0])+":"+str(best_left_score[1]), False, WHITE)
+    scr.screen.blit(player_text, (300,int(scr.screen_height/2)))
+    player_text = game_font.render("TOP SCORE FOR "+Right_Name+" : "+str(best_right_score[0])+":"+str(best_right_score[1]), False, WHITE)
+    scr.screen.blit(player_text, (300,int(scr.screen_height/2)+60))
+
+    pygame.display.update()
+
+    time.sleep(2)
+
+    return GameState.TITLE
+
 def help_screen(scr):
     screen = scr.screen
     screen_width = scr.screen_width
@@ -120,6 +149,7 @@ def help_screen(scr):
     return game_loop(screen, buttons)
 
 def main():
+    global best_left_score, best_right_score, Left_Name, Right_Name
     pygame.init()
     pygame.display.set_caption('Pong')
 
@@ -127,6 +157,20 @@ def main():
     game_state = GameState.TITLE
     player = Player()
 
+    # read the top score from file and config file
+    score = []
+    config = []
+    for line in open('assets/__score'):
+        score.append(tuple(line.strip().split(',')))
+    best_left_score[0] = int(score[0][0])
+    best_left_score[1] = int(score[0][1])
+    best_right_score[0] = int(score[1][0])
+    best_right_score[1] = int(score[1][1])
+
+    for line in open('config'):
+        config.append(tuple(line.strip().split(':')))
+    player.Left_Name = config[0][1]
+    player.Right_Name = config[1][1]
 
     while True:
         if game_state == GameState.BACK:
@@ -137,11 +181,14 @@ def main():
 
         if game_state == GameState.ONE_PLAYER:
             player.two_player = False
-            game_state = play_pong(screen, player)
+            game_state = play_pong(screen, player, game_state)
 
         if game_state == GameState.TWO_PLAYER:
             player.two_player = True
-            game_state = play_pong(screen, player)
+            game_state = play_pong(screen, player, game_state)
+
+        if game_state == GameState.TOPSCORE:
+            game_state = show_topScore(screen, player)
 
         if game_state == GameState.HELP_LT or game_state == GameState.HELP_RT:
             doNothing = 1
