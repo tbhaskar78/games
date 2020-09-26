@@ -1,8 +1,12 @@
 # Author: Bhaskar Tallamraju
 # Date  : 24 Sep 2020
+
+#!/usr/bin/env python3
 import os
 import sys
+import time
 import random
+from math import *
 from enum import Enum
 import pygame
 import pygame.freetype
@@ -12,6 +16,9 @@ from pygame.locals import *
 from pygame.draw import rect
 from pygame.sprite import RenderUpdates
 
+GAME_SCORE = 11
+GAME_MAX_LEVEL = 3
+LENGTH_OF_PADDLE = 100
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 650
 BG_COLOR = (23, 57, 75)
@@ -23,6 +30,39 @@ BLUE = (118, 155, 175)
 WHITE = (255, 255, 255)
 BALL_SPEED = 6
 PADDLE_SPEED = 5
+
+class GameParams:
+    """ Stores game parameters """
+    def __init__(self):
+        self.level = 1
+        self.score_time = True
+        self.best_left_score = [0, 0]
+        self.best_right_score = [0, 0]
+        self.left_wins = 0
+        self.right_wins = 0
+        self.len_of_paddle = 100
+        self.pong_sound = None
+        self.score_sound = None
+        self.ball = None
+        self.ball_speed_x = BALL_SPEED * random.choice((1, -1))
+        self.ball_speed_y = BALL_SPEED * random.choice((1, -1))
+        self.best_left_level = 0
+        self.best_right_level = 0
+
+class Player:
+    """ Stores information about a player """
+    def __init__(self, score=0, two_player=False, current_level=1, Right_Name="RIGHT PLAYER", Left_Name="LEFT PLAYER"):
+        self.score = score
+        self.two_player = two_player
+        self.current_level = current_level
+        self.Left_Name = Left_Name
+        self.Right_Name = Right_Name
+        self.leftPlayer_speed = 0
+        self.rightPlayer_speed = 0
+        self.leftPlayer_score = 0
+        self.rightPlayer_score = 0
+        self.leftPlayer = None
+        self.rightPlayer = None
 
 def create_surface_with_text(text, font_size, text_rgb, bg_rgb):
     """ Returns surface with text written on """
@@ -70,7 +110,7 @@ class Head(pygame.sprite.Sprite):
         '''
         if self.direction == 'right' and self.rect.right > self.area.right - self.MARGIN:
             self.xstep = -2
-            self.ystep = self.STEP 
+            self.ystep = self.STEP
             self.direction = 'down'
 
         if self.direction == 'down' and self.rect.bottom > self.area.bottom - self.MARGIN:
@@ -115,6 +155,7 @@ class GameState(Enum):
     BACK = 4
     HELP_LT = 5
     HELP_RT = 6
+    TOPSCORE = 7
 
 
 class Screen():
@@ -122,13 +163,6 @@ class Screen():
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.screen = screen
-
-class Player:
-    """ Stores information about a player """
-    def __init__(self, score=0, two_player=False, current_level=1):
-        self.score = score
-        self.two_player = two_player
-        self.current_level = current_level
 
 class UIElement(Sprite):
     """ An user interface element that can be added to a surface """
