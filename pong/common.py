@@ -1,7 +1,6 @@
 # Author: Bhaskar Tallamraju
 # Date  : 24 Sep 2020
 
-#!/usr/bin/env python3
 import os
 import sys
 import time
@@ -16,6 +15,7 @@ from pygame.locals import *
 from pygame.draw import rect
 from pygame.sprite import RenderUpdates
 
+# CONSTANTS
 GAME_SCORE = 11
 GAME_MAX_LEVEL = 3
 LENGTH_OF_PADDLE = 100

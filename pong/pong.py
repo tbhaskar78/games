@@ -1,11 +1,10 @@
+#!/usr/bin/python3
+
 # Author: Bhaskar Tallamraju
 # Date  : 24 Sep 2020
-
-#!/usr/bin/env python3
 from gameloop import *
 from common import *
 from os import path
-
 
 def title_screen(screen):
     screen_width = screen.screen_width

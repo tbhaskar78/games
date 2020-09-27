@@ -1,7 +1,6 @@
 # Author: Bhaskar Tallamraju
 # Date  : 24 Sep 2020
 
-#!/usr/bin/env python3
 from common import *
 
 os.putenv('SDL_AUDIODRIVER', 'alsa')
