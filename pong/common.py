@@ -16,7 +16,7 @@ from pygame.draw import rect
 from pygame.sprite import RenderUpdates
 
 # CONSTANTS
-GAME_SCORE = 11
+GAME_SCORE = 1
 GAME_MAX_LEVEL = 3
 LENGTH_OF_PADDLE = 100
 SCREEN_WIDTH = 1200

@@ -154,8 +154,10 @@ def help_screen(scr):
                 return
 
 def main():
+    pygame.mixer.pre_init(44100, -16, 2, 128)
     pygame.init()
     pygame.display.set_caption('Pong')
+    game_sound = pygame.mixer.Sound("assets/hero.ogg")
 
     screen = Screen(pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)), SCREEN_WIDTH, SCREEN_HEIGHT)
     game_state = GameState.TITLE
@@ -192,20 +194,26 @@ def main():
                 gameParam.best_right_score[1] = (score_rt[0][1])
                 gameParam.best_right_level = score_rt[0][2]
 
+    pygame.mixer.Sound.play(game_sound)
     while True:
         if game_state == GameState.BACK:
             game_state = title_screen(screen)
 
         if game_state == GameState.TITLE:
+            pygame.mixer.Sound(game_sound).play(-1)
             game_state = title_screen(screen)
 
         if game_state == GameState.ONE_PLAYER:
             player.two_player = False
+            pygame.mixer.stop()
             game_state = play_pong(screen, player, gameParam, game_state)
+            pygame.mixer.stop()
 
         if game_state == GameState.TWO_PLAYER:
             player.two_player = True
+            pygame.mixer.stop()
             game_state = play_pong(screen, player, gameParam, game_state)
+            pygame.mixer.stop()
 
         if game_state == GameState.TOPSCORE:
             game_state = show_topScore(screen, player, gameParam)

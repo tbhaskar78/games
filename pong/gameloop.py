@@ -172,7 +172,8 @@ def act_on_score(scr, playerParam, gameParam):
     screen.fill(BG_COLOR)
     playerParam.rightPlayer_score = 0
     playerParam.leftPlayer_score = 0
-    time.sleep(2)
+    time.sleep(1)
+    pygame.mixer.music.pause()
     if gameParam.level >= GAME_MAX_LEVEL:
         gameParam.len_of_paddle = LENGTH_OF_PADDLE
         playerParam.leftPlayer_speed = 0 #PADDLE_SPEED
@@ -180,16 +181,28 @@ def act_on_score(scr, playerParam, gameParam):
             match_win = game_font.render(playerParam.Left_Name+"  WINS THE MATCH "\
                                            +str(gameParam.left_wins)+" - "\
                                            +str(gameParam.right_wins), False, WHITE)
+            if playerParam.two_player == False:
+                pygame.mixer.stop()
+                pygame.mixer.music.stop()
+                pygame.mixer.Sound('assets/fail.ogg').play()
+            else:
+                pygame.mixer.stop()
+                pygame.mixer.music.stop()
+                pygame.mixer.Sound('assets/success.ogg').play()
         else:
             match_win = game_font.render(playerParam.Right_Name+"  WINS THE MATCH "\
                                            +str(gameParam.right_wins)+" - "+\
                                            str(gameParam.left_wins), False, WHITE)
+            pygame.mixer.stop()
+            pygame.mixer.music.stop()
+            pygame.mixer.Sound('assets/success.ogg').play()
         screen.blit(match_win, (int(screen_width/4),int(screen_height/2)))
         pygame.display.flip()
         time.sleep(4)
         gameParam.left_wins = 0
         gameParam.right_wins = 0
         return GameState.TITLE
+    pygame.mixer.music.unpause()
 
 def play_pong(scr, playerParam, gameParam, game_state):
     # fetch screen params
@@ -230,6 +243,8 @@ def play_pong(scr, playerParam, gameParam, game_state):
     time.sleep(4)
 
 
+    pygame.mixer.music.load('assets/clown.ogg')
+    pygame.mixer.music.play(-1)
     # LOOP forever
     while True:
         # handle events
@@ -263,9 +278,9 @@ def play_pong(scr, playerParam, gameParam, game_state):
                     playerParam.leftPlayer_speed += PADDLE_SPEED
 
         if playerParam.leftPlayer_score >= GAME_SCORE:
-            if gameParam.best_left_score[0] < playerParam.leftPlayer_score:
-                gameParam.best_left_score[0] = playerParam.leftPlayer_score
-                gameParam.best_left_score[1] = playerParam.rightPlayer_score
+            if int(gameParam.best_left_score[0]) < playerParam.leftPlayer_score:
+                gameParam.best_left_score[0] = str(playerParam.leftPlayer_score)
+                gameParam.best_left_score[1] = str(playerParam.rightPlayer_score)
                 # update the score
                 filename = "assets/__score."+playerParam.Right_Name
                 with open(filename, 'w') as f:
@@ -289,9 +304,9 @@ def play_pong(scr, playerParam, gameParam, game_state):
             return game_state
 
         elif playerParam.rightPlayer_score >= GAME_SCORE:
-            if gameParam.best_right_score[0] < playerParam.rightPlayer_score:
-                gameParam.best_right_score[0] = playerParam.rightPlayer_score
-                gameParam.best_right_score[1] = playerParam.leftPlayer_score
+            if int(gameParam.best_right_score[0]) < playerParam.rightPlayer_score:
+                gameParam.best_right_score[0] = str(playerParam.rightPlayer_score)
+                gameParam.best_right_score[1] = str(playerParam.leftPlayer_score)
                 # update the score
                 filename = "assets/__score."+playerParam.Right_Name
                 with open(filename, 'w') as f:
@@ -343,24 +358,9 @@ def play_pong(scr, playerParam, gameParam, game_state):
         pygame.display.flip()
         clock.tick(60)
 
-def main():
+if __name__ == "__main__":
     # SETUP
     pygame.mixer.pre_init(44100, -16, 2, 128)
     pygame.init()
 
-    screen = Screen(pygame.display.set_mode((1200, 650)))
-    pygame.display.set_caption('Pong')
-    rtn_button = UIElement(
-        center_position=(140, 570),
-        font_size=20,
-        bg_rgb=BLUE,
-        text_rgb=WHITE,
-        text="Return to main menu",
-        action=GameState.TITLE,
-    )
-    buttons = RenderUpdates(rtn_button)
-
     play_pong(screen, player)
-
-if __name__ == "__main__":
-    main()
