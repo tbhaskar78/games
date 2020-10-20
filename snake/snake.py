@@ -210,11 +210,11 @@ def main():
             broccoli.randomize_position()
             if broccoli.position[0] == potion.position[0]:
                 broccoli.randomize_position()
-            if broccoli.position[0] == potion.position[0]:
+            elif broccoli.position[0] == potion.position[0]:
                 broccoli.randomize_position()
-            if broccoli.position[0] == poison.position[0]:
+            elif broccoli.position[0] == poison.position[0]:
                 broccoli.randomize_position()
-            if broccoli.position[0] == food2.position[0]:
+            elif broccoli.position[0] == food2.position[0]:
                 broccoli.randomize_position()
         # food 1
         if snake.get_head_position() == food.position:
@@ -224,11 +224,11 @@ def main():
             food.randomize_position()
             if food.position[0] == broccoli.position[0]:
                 food.randomize_position()
-            if food.position[0] == potion.position[0]:
+            elif food.position[0] == potion.position[0]:
                 food.randomize_position()
-            if food.position[0] == poison.position[0]:
+            elif food.position[0] == poison.position[0]:
                 food.randomize_position()
-            if food.position[0] == food2.position[0]:
+            elif food.position[0] == food2.position[0]:
                 food.randomize_position()
 
         # food 2
@@ -239,9 +239,9 @@ def main():
             food2.randomize_position()
             if food2.position[0] == broccoli.position[0]:
                 food2.randomize_position()
-            if food2.position[0] == potion.position[0]:
+            elif food2.position[0] == potion.position[0]:
                 food2.randomize_position()
-            if food2.position[0] == poison.position[0]:
+            elif food2.position[0] == poison.position[0]:
                 food2.randomize_position()
             elif food2.position[0] == food.position[0]:
                 food2.randomize_position()
@@ -251,14 +251,18 @@ def main():
             poisonDrawn = 0
             tempscore = snake.score
             snake.reset()
+            dead = game_font.render("Dead...You are Poisoned!", False, (255,0,0));
+            screen.blit(dead, (int(screen_width/2)-180, int(screen_height/2)-20))
+            pygame.display.update()
+            time.sleep(1.5)
             poison.randomize_position()
             if poison.position[0] == broccoli.position[0]:
                 poison.randomize_position()
-            if poison.position[0] == potion.position[0]:
+            elif poison.position[0] == potion.position[0]:
                 poison.randomize_position()
-            if poison.position[0] == food.position[0]:
+            elif poison.position[0] == food.position[0]:
                 poison.randomize_position()
-            if poison.position[0] == food2.position[0]:
+            elif poison.position[0] == food2.position[0]:
                 poison.randomize_position()
 
         # potion
@@ -270,17 +274,17 @@ def main():
             screen.blit(minus, (int(screen_width/2)-150, int(screen_height/2)-20))
             screen.blit(minus2, (int(screen_width/2)-120, int(screen_height/2)+20))
             pygame.display.update()
-            time.sleep(1)
+            time.sleep(1.5)
             snake.reduce()
             drawGrid(surface, colorA, colorB)
             potion.randomize_position()
             if potion.position[0] == broccoli.position[0]:
                 potion.randomize_position()
-            if poison.position[0] == potion.position[0]:
+            elif poison.position[0] == potion.position[0]:
                 potion.randomize_position()
-            if potion.position[0] == food.position[0]:
+            elif potion.position[0] == food.position[0]:
                 potion.randomize_position()
-            if potion.position[0] == food2.position[0]:
+            elif potion.position[0] == food2.position[0]:
                 potion.randomize_position()
 
         if (snake.length+1) % 10 == 0 and count == 0:
@@ -305,9 +309,9 @@ def main():
             game_end = game_font.render("Game Ends!", False, (255,0,0));
             game_top_score = game_font.render("Your top score {0}".format(snake.top_score), False, (255,0,0));
             game_top_cum_score = game_font.render("Your cumulative score {0}".format(snake.cumulative_score), False, (255,0,0));
-            screen.blit(game_end, (int(screen_width/2)-90, int(screen_height/2)-20))
-            screen.blit(game_top_score, (int(screen_width/2)-100, int(screen_height/2)+20))
-            screen.blit(game_top_cum_score, (int(screen_width/2)-200, int(screen_height/2)+60))
+            screen.blit(game_end, (int(screen_width/2)-90, int(screen_height/2)-50))
+            screen.blit(game_top_score, (int(screen_width/2)-100, int(screen_height/2)+10))
+            screen.blit(game_top_cum_score, (int(screen_width/2)-180, int(screen_height/2)+50))
             pygame.display.update()
             time.sleep(4)
             pygame.quit()
@@ -327,5 +331,6 @@ def main():
         screen.blit(text2, (5,25))
         pygame.display.update()
 
-main()
+if __name__ == "__main__":
+    main()
 
