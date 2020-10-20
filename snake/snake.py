@@ -1,3 +1,12 @@
+#!/usr/bin/python3
+
+# Author: Bhaskar Tallamraju
+# Date  : 20 Oct 2020
+
+# This is an improved version of the game originally designed by
+# [MikhailLenko](https://github.com/kiteco/python-youtube-code/tree/master/snake)
+# I also want to mention that all cliparts are from https://clipartmax.com 
+# and sounds from https://zapsplat.com
 import pygame
 import sys
 import random
