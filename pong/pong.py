@@ -153,6 +153,39 @@ def help_screen(scr):
             if event.type == MOUSEBUTTONDOWN:
                 return
 
+def showSettingsScreen(scr, p1name=None, p2name=None, twoPlayers=False):
+    """This is the screen that lets the user type in their name and settings for the game."""
+    points = None
+    screenSurf = scr.screen
+    SCR_WIDTH = scr.screen_width
+    SCR_HEIGHT = scr.screen_height
+
+    screenSurf.fill(BG_COLOR)
+
+    while p1name is None:
+        p1name = inputMode("Name of Left Player (Default = 'Player 1'):  ", screenSurf, SCR_WIDTH / 2 - 330,
+                SCR_HEIGHT/2-30, WHITE, BG_COLOR, maxlen=10, pos='left', cursorBlink=True)
+    if p1name == '':
+        p1name = 'Player 1'
+
+    while p2name is None:
+        p2name = inputMode("Name of Right Player (Default = 'Player 2'):  ", screenSurf, SCR_WIDTH / 2 - 330,
+                (SCR_HEIGHT/2)+10, WHITE, BG_COLOR, maxlen=10, pos='left', cursorBlink=True)
+    if p2name == '':
+        p2name = 'Player 2'
+
+    while points is None:
+        points = inputMode("Play to how many total points (Default = 11)?  ", screenSurf, SCR_WIDTH / 2 - 330,
+                (SCR_HEIGHT/2)+50, WHITE, BG_COLOR, maxlen=6, allowed='0123456789', pos='left', cursorBlink=True)
+    if points == '':
+        points = 11
+    else:
+        points = int(points)
+
+    pygame.display.update()
+
+    return p1name, p2name, points
+
 def main():
     pygame.mixer.pre_init(44100, -16, 2, 128)
     pygame.init()
@@ -205,12 +238,14 @@ def main():
 
         if game_state == GameState.ONE_PLAYER:
             player.two_player = False
+            player.Left_Name, player.Right_Name, game_state.Game_Score = showSettingsScreen(screen)
             pygame.mixer.stop()
             game_state = play_pong(screen, player, gameParam, game_state)
             pygame.mixer.stop()
 
         if game_state == GameState.TWO_PLAYER:
             player.two_player = True
+            player.Left_Name, player.Right_Name, game_state.Game_Score = showSettingsScreen(screen, None, None, True)
             pygame.mixer.stop()
             game_state = play_pong(screen, player, gameParam, game_state)
             pygame.mixer.stop()

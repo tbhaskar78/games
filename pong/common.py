@@ -16,7 +16,7 @@ from pygame.draw import rect
 from pygame.sprite import RenderUpdates
 
 # CONSTANTS
-GAME_SCORE = 1
+GAME_SCORE = 11
 GAME_MAX_LEVEL = 3
 LENGTH_OF_PADDLE = 100
 SCREEN_WIDTH = 1200
@@ -28,6 +28,17 @@ LIGHT_GREEN = (0, 200, 0)
 LIGHT_BLUE = (0, 0, 200)
 BLUE = (118, 155, 175)
 WHITE = (255, 255, 255)
+DARK_WINDOW = (82, 85, 82)
+SKY_COLOR = (0, 0, 173)
+GOR_COLOR = (255, 170, 82)
+BAN_COLOR = (255, 255, 82)
+EXPLOSION_COLOR = (255, 0, 0)
+SUN_COLOR = (255, 255, 0)
+DARK_RED_COLOR = (173, 0, 0)
+BLACK_COLOR = (0, 0, 0)
+WHITE_COLOR = (255, 255, 255)
+GRAY_COLOR = (173, 170, 173)
+
 BALL_SPEED = 6
 PADDLE_SPEED = 5
 
@@ -35,6 +46,7 @@ class GameParams:
     """ Stores game parameters """
     def __init__(self):
         self.level = 1
+        self.Game_Score = 11
         self.score_time = True
         self.best_left_score = [0, 0]
         self.best_right_score = [0, 0]
@@ -75,6 +87,86 @@ def load_image(name, colorkey=None):
     image = image.convert()
 
     return image, image.get_rect()
+
+def getModCase(s, mod):
+    """Checks the state of the shift and caps lock keys, and switches the case of the s string if needed."""
+    if bool(mod & KMOD_RSHIFT or mod & KMOD_LSHIFT) ^ bool(mod & KMOD_CAPS):
+        return s.swapcase()
+    else:
+        return s
+
+def drawText(text, surfObj, x, y, fgcol, bgcol, pos='left'):
+    #GAME_FONT = pygame.font.SysFont(None, 20)
+    GAME_FONT = pygame.font.Font("freesansbold.ttf", 25)
+
+    textobj = GAME_FONT.render(text, 1, fgcol, bgcol) # creates the text in memory (it's not on a surface yet).
+    textrect = textobj.get_rect()
+
+    if pos == 'left':
+        textrect.topleft = (int(x), int(y))
+    elif pos == 'center':
+        textrect.midtop = (int(x), int(y))
+    surfObj.blit(textobj, textrect) # draws the text onto the surface
+    return textrect
+
+def inputMode(prompt, screenSurf, x, y, fgcol, bgcol, maxlen=12, allowed=None, pos='left', cursor='_', cursorBlink=False):
+    FPS = 30
+    GAME_CLOCK = pygame.time.Clock()
+    inputText = ''
+    """inputText will store the text of what the player has typed in so far."""
+    done = False
+    cursorTimestamp = time.time()
+    cursorShow = cursor
+    while not done:
+        if cursor and cursorBlink and time.time() - 1.0 > cursorTimestamp:
+            if cursorShow == cursor:
+                cursorShow = '   '
+            else:
+                cursorShow = cursor
+            cursorTimestamp = time.time()
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+            elif event.type == KEYUP:
+                if event.key == K_ESCAPE:
+                    return None
+                elif event.key == K_RETURN:
+                    done = True
+                    if cursorShow:
+                        cursorShow = '   '
+                elif event.key == K_BACKSPACE:
+                    if len(inputText):
+                        drawText(prompt + inputText + cursorShow, screenSurf, textrect.left, textrect.top, bgcol, bgcol, 'left')
+                        inputText = inputText[:-1]
+                else:
+                    if len(inputText) >= maxlen or (allowed is not None and chr(event.key) not in allowed):
+                        continue
+                    if event.key >= 32 and event.key < 128:
+                        inputText += getModCase(chr(event.key), event.mod)
+
+        textrect = drawText(prompt + cursorShow, screenSurf, x, y, fgcol, bgcol, pos)
+        drawText(prompt + inputText + cursorShow, screenSurf, textrect.left, textrect.top, fgcol, bgcol, 'left')
+        pygame.display.update()
+        GAME_CLOCK.tick(FPS)
+    return inputText
+
+def waitForPlayerToPressKey():
+    """Calling this function will pause the program until the user presses a key. The key is returned."""
+    while True:
+        key = checkForKeyPress()
+        if key:
+            return key
+
+def checkForKeyPress():
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            terminate()
+        if event.type == KEYUP:
+            if event.key == K_ESCAPE: # pressing escape quits
+                terminate()
+            return event.key
+    return False
 
 class Head(pygame.sprite.Sprite):
     def __init__(self):

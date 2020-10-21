@@ -256,6 +256,8 @@ def play_pong(scr, playerParam, gameParam, game_state):
                 return GameState.TITLE
             # control rightPlayer paddle
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return GameState.TITLE
                 if event.key == pygame.K_DOWN:
                     playerParam.rightPlayer_speed += PADDLE_SPEED
                 if event.key == pygame.K_UP:
@@ -277,7 +279,7 @@ def play_pong(scr, playerParam, gameParam, game_state):
                 if event.key == pygame.K_w:
                     playerParam.leftPlayer_speed += PADDLE_SPEED
 
-        if playerParam.leftPlayer_score >= GAME_SCORE:
+        if playerParam.leftPlayer_score >= gameParam.Game_Score:
             if int(gameParam.best_left_score[0]) < playerParam.leftPlayer_score:
                 gameParam.best_left_score[0] = str(playerParam.leftPlayer_score)
                 gameParam.best_left_score[1] = str(playerParam.rightPlayer_score)
@@ -303,7 +305,7 @@ def play_pong(scr, playerParam, gameParam, game_state):
             levelUp(scr, gameParam)
             return game_state
 
-        elif playerParam.rightPlayer_score >= GAME_SCORE:
+        elif playerParam.rightPlayer_score >= gameParam.Game_Score:
             if int(gameParam.best_right_score[0]) < playerParam.rightPlayer_score:
                 gameParam.best_right_score[0] = str(playerParam.rightPlayer_score)
                 gameParam.best_right_score[1] = str(playerParam.leftPlayer_score)
