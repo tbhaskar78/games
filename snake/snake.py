@@ -174,10 +174,10 @@ def main():
     food2 = Food()
     broccoli = Food()
     poison = Poison()
-    potion = Poison()
+    chilli = Poison()
     count = 0
     poisonDrawn = 0
-    potionDrawn = 0
+    chilliDrawn = 0
     broccoliDrawn = 0
     veggieIndex = 0
 
@@ -208,9 +208,9 @@ def main():
             snake.length += 5
             snake.score += 5
             broccoli.randomize_position()
-            if broccoli.position[0] == potion.position[0]:
+            if broccoli.position[0] == chilli.position[0]:
                 broccoli.randomize_position()
-            elif broccoli.position[0] == potion.position[0]:
+            elif broccoli.position[0] == chilli.position[0]:
                 broccoli.randomize_position()
             elif broccoli.position[0] == poison.position[0]:
                 broccoli.randomize_position()
@@ -224,7 +224,7 @@ def main():
             food.randomize_position()
             if food.position[0] == broccoli.position[0]:
                 food.randomize_position()
-            elif food.position[0] == potion.position[0]:
+            elif food.position[0] == chilli.position[0]:
                 food.randomize_position()
             elif food.position[0] == poison.position[0]:
                 food.randomize_position()
@@ -239,7 +239,7 @@ def main():
             food2.randomize_position()
             if food2.position[0] == broccoli.position[0]:
                 food2.randomize_position()
-            elif food2.position[0] == potion.position[0]:
+            elif food2.position[0] == chilli.position[0]:
                 food2.randomize_position()
             elif food2.position[0] == poison.position[0]:
                 food2.randomize_position()
@@ -258,16 +258,16 @@ def main():
             poison.randomize_position()
             if poison.position[0] == broccoli.position[0]:
                 poison.randomize_position()
-            elif poison.position[0] == potion.position[0]:
+            elif poison.position[0] == chilli.position[0]:
                 poison.randomize_position()
             elif poison.position[0] == food.position[0]:
                 poison.randomize_position()
             elif poison.position[0] == food2.position[0]:
                 poison.randomize_position()
 
-        # potion
-        if snake.get_head_position() == potion.position and potionDrawn == 1:
-            potionDrawn = 0
+        # chilli
+        if snake.get_head_position() == chilli.position and chilliDrawn == 1:
+            chilliDrawn = 0
             pygame.mixer.Sound('assets/ogg/sneeze.ogg').play()
             minus = game_font.render("oops...ATE A CHILLI!", False, (255,0,0));
             minus2 = game_font.render("Reducing 2 points", False, (255,0,0));
@@ -277,15 +277,15 @@ def main():
             time.sleep(1.5)
             snake.reduce()
             drawGrid(surface, colorA, colorB)
-            potion.randomize_position()
-            if potion.position[0] == broccoli.position[0]:
-                potion.randomize_position()
-            elif poison.position[0] == potion.position[0]:
-                potion.randomize_position()
-            elif potion.position[0] == food.position[0]:
-                potion.randomize_position()
-            elif potion.position[0] == food2.position[0]:
-                potion.randomize_position()
+            chilli.randomize_position()
+            if chilli.position[0] == broccoli.position[0]:
+                chilli.randomize_position()
+            elif poison.position[0] == chilli.position[0]:
+                chilli.randomize_position()
+            elif chilli.position[0] == food.position[0]:
+                chilli.randomize_position()
+            elif chilli.position[0] == food2.position[0]:
+                chilli.randomize_position()
 
         if (snake.length+1) % 10 == 0 and count == 0:
             colors = random.choice([color1, color3, color5, color7])
@@ -296,12 +296,12 @@ def main():
             count = 0
 
         if snake.length > 1:
-            poison.draw(surface, 'assets/img/potion.png')
+            poison.draw(surface, 'assets/img/danger.png')
             poisonDrawn = 1
 
         if snake.length > 7:
-            potion.draw(surface, 'assets/img/chilli.png')
-            potionDrawn = 1
+            chilli.draw(surface, 'assets/img/chilli.png')
+            chilliDrawn = 1
 
         if snake.life <= 0:
             pygame.mixer.Sound('assets/ogg/fail2.ogg').play()
