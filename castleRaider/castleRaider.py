@@ -47,7 +47,7 @@ level = [
         "G     GGd           PGG        GG       C  G",
         "G     PPPPPP         GG        GG          G",
         "G          PPPP      GG        GG          G",
-        "G        F         PPGG    PPPPPP  PPPPPPPPG",
+        "G                  PPGG    PPPPPP  PPPPPPPPG",
         "GPPP     W                                 G",
         "G    C       C          d                  G",
         "G               PPPPPPPPP                  G",
@@ -85,7 +85,7 @@ level = [
         "e    W             PPGG       P       W    G",
         "        C        PP  GG  K      P S        G",
         "GG                   GG                f   G",
-        "GGGG      GG         GG     d              G",
+        "GGGG      GG         GG    d               G",
         "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",],
 
        # LEVEL 4
@@ -93,7 +93,7 @@ level = [
         "G   D      u         L                D    G",
         "G                                          G",
         "G  CWC                              C W C  G",
-        "GH  K   G    P                PGGP    F    G",
+        "G H K   G    P                PGGP    F    G",
         "G       G                      GG          G",
         "G       GP              PPP    GG          G",
         "GGGGGGGGG                      GGPP      PPG",
@@ -108,8 +108,8 @@ level = [
         "GPPP     PP  PPP    PP   P     PP  P  P    G",
         "G    P                                    PG",
         "G                                          G",
-        "G                d            d            G",
-        "e         GGGGGGGGGGPPPP    PPPGGGGPPPP    G",
+        "G                d               d         G",
+        "e         GGGGGGGGGGPPPP     PPGGGGPPPP    G",
         "            C   W   C             S       PG",
         "GG                                         G",
         "GGGG                      d                G",
@@ -208,7 +208,7 @@ def gameRoomBuild(screen, entities, platforms, levelIndex):
     return entities, platforms, keyObject, exitObject, foodObject
 
 def buildEntities(screen, platforms, entities, enemygroup, levelIndex,
-                  maxLivesLeft):
+                  maxLivesLeft, score):
     global MULTIPLIER
     # build the enemies
     if True:
@@ -225,7 +225,7 @@ def buildEntities(screen, platforms, entities, enemygroup, levelIndex,
         enemygroup.add(Bubble(MULTIPLIER*32, MULTIPLIER*9, screen))
 
     # build the level with player
-    player = Player(MULTIPLIER*2, MULTIPLIER*22, maxLivesLeft, screen)
+    player = Player(MULTIPLIER*2, MULTIPLIER*22, maxLivesLeft, screen, score)
     entities, platforms, keyObject, exitObject, foodObject = gameRoomBuild(screen, entities, platforms, levelIndex)
 
     total_level_width  = len(level[levelIndex][0])*MULTIPLIER
@@ -242,6 +242,7 @@ def main():
 
     os.environ['SDL_VIDEO_CENTERED'] = '1'
 
+    score = 0
     exitObject = None
     keyObject = None
     nextLevel = True
@@ -293,11 +294,12 @@ def main():
                 enemygroup.empty()
 
                 platforms, entities, enemygroup, camera, player, keyObject, exitObject, foodObject  = buildEntities(screen,
-                                                                                                        platforms,
-                                                                                                        entities,
-                                                                                                        enemygroup,
-                                                                                                        levelIndex,
-                                                                                                        maxLives)
+                                                                                                                    platforms,
+                                                                                                                    entities,
+                                                                                                                    enemygroup,
+                                                                                                                    levelIndex,
+                                                                                                                    maxLives,
+                                                                                                                    score)
                 pygame.event.clear()
                 currentLevel = levelIndex
 
@@ -389,9 +391,14 @@ def main():
                     else:
                         if DEBUG == True:
                             print("etype is DEAD, EXITING")
+                        drawCurtains(screen, 0, "Princess Ella is lost forever !")
                         raise SystemExit("DEAD")
 
                 elif e.type == QUIT:
+                    pygame.mixer.music.stop()
+                    time.sleep(0.1)
+                    pygame.mixer.Sound('assets/ogg/death.ogg').play()
+                    drawCurtains(screen, 0, "Princess Ella is lost forever !")
                     raise SystemExit("EXITING")
 
                 elif e.type == HURT:
@@ -417,11 +424,18 @@ def main():
                             enemygroup.empty()
                             break
                         else:
+                            pygame.mixer.music.stop()
+                            time.sleep(0.1)
+                            pygame.mixer.Sound('assets/ogg/death.ogg').play()
+                            drawCurtains(screen, 0, "Princess Ella is lost forever !")
                             raise SystemExit("DEAD")
 
                 elif e.type == KEYDOWN and e.key == K_ESCAPE:
                     print ("Hope you enjoyed the Castle Raider !")
-                    drawCurtains(screen, 0, "Princess Peach is lost forever !")
+                    pygame.mixer.music.stop()
+                    time.sleep(0.1)
+                    pygame.mixer.Sound('assets/ogg/death.ogg').play()
+                    drawCurtains(screen, 0, "Princess Ella is lost forever !")
                     raise SystemExit("ESCAPE")
 
                 elif e.type == KEYDOWN:
@@ -451,7 +465,12 @@ def main():
             camera.update(player)
 
             # update player, draw everything else
-            player.update(up, down, left, right, running, platforms, enemygroup)
+            if player.update(up, down, left, right, running, platforms,
+                        enemygroup) == True:
+                left = False
+                right = False
+                up = False
+
             for e in entities:
                 screen.blit(e.image, camera.apply(e))
             for e in enemygroup:
@@ -462,6 +481,12 @@ def main():
             displayHeart.update("assets/img/heart.png", health, (WIN_WIDTH-150),
                                 (16,16))
             displayFace.update("assets/img/face.png", maxLives, (30), (25, 25), 30)
+
+            score = player.get_score()
+            game_font = pygame.font.Font("freesansbold.ttf", 16)
+            score_text = game_font.render(f"Score: {score}", False, (255, 255,
+                                                                    255))
+            screen.blit(score_text, (int(screen.get_width()/2)-50,0+8))
 
             pygame.display.update()
 
@@ -498,7 +523,7 @@ def drawCurtains(screen, levelIndex, text=None):
         guard =  pygame.image.load("assets/img/guard1.png")
         guard = pygame.transform.scale(guard, (MULTIPLIER*3, 32*5))
         guard = pygame.transform.flip(guard, True, False)
-        for indexCount in range (10):
+        for indexCount in range (5):
             game_font = pygame.font.Font("freesansbold.ttf", 32)
             player_text = game_font.render(text, False, (255, 255, 255))
             screen.blit(player_text, (screen.get_width()/2-len(text)-200, int(screen.get_height()/2)))
@@ -599,6 +624,10 @@ def title_scene(screen):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 print ("Hope you enjoyed the Castle Raider !")
+                pygame.mixer.music.stop()
+                time.sleep(0.1)
+                pygame.mixer.Sound('assets/ogg/death.ogg').play()
+                drawCurtains(screen, 0, "Princess Ella is lost forever !")
                 raise SystemExit("ESCAPE")
 
             if event.type == pg.KEYDOWN:

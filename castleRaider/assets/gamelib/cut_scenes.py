@@ -1,4 +1,5 @@
 import pygame as pg
+from assets.gamelib.common import *
 
 
 def draw_text(screen, text, size, color, x, y):
@@ -25,7 +26,7 @@ class CutSceneOne:
 
         # Dialogue
         self.text = {
-            'one': "Princess Peach needs help, please hurry !",
+            'one': "Princess Ella needs help, please hurry !",
             'two': "That's better, you are one floor closer to Princess Irma",
             'three': "That's better, now be careful 3",
             'four': "That's better, now be careful 4",
@@ -115,7 +116,9 @@ class CutSceneManager:
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     print ("Hope you enjoyed the Castle Raider !")
-                    raise SystemExit("ESCAPE")
+                    pg.event.post(pg.event.Event(DEAD))
+                    #raise SystemExit("ESCAPE")
+                    return
 
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_SPACE:

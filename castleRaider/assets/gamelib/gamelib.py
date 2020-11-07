@@ -31,7 +31,7 @@ class Entity(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
 class Player(Entity):
-    def __init__(self, x, y, livesLeft, screen):
+    def __init__(self, x, y, livesLeft, screen, score):
         Entity.__init__(self)
         self.xvel = 0
         self.yvel = 0
@@ -42,13 +42,17 @@ class Player(Entity):
         self.counter = 0
         self.fallingcount = 0
         self.image = adventBoy_stand1
-        self.rect = Rect(x, y, MULTIPLIER+10, 32*3) #16*3, 32*4-35)
+        self.rect = Rect(x, y, MULTIPLIER+30, 32*3) #16*3, 32*4-35)
         self.lifetotal = ["", "l", "ll", "lll", "llll", "lllll", "llllll", "lllllll", "llllllll", "lllllllll"]
         self.currentlifetotal = 9
         self.maxLives = livesLeft
         self.key = False
         self.gotKey = False
         self.screen = screen
+        self.score = score
+
+    def get_score(self):
+        return self.score
 
     def update(self, up, down, left, right, running, platforms, enemygroup):
         if up:
@@ -82,10 +86,10 @@ class Player(Entity):
         # increment in x direction
         self.rect.left += self.xvel
         # do x-axis collisions
+        left = False
+        right = False
+        up  = False
         if self.collide(self.xvel, 0, platforms, enemygroup) == False:
-            left = False
-            right = False
-            up  = False
             # increment in y direction
             self.rect.top += self.yvel
             # assuming we're in the air
@@ -94,9 +98,9 @@ class Player(Entity):
             # do y-axis collisions
             if self.collide(0, self.yvel, platforms, enemygroup) == False:
                 self.animate()
-                left = False
-                right = False
-                up  = False
+            return False
+        else:
+            return True
 
     def collide(self, xvel, yvel, platforms, enemygroup):
         global DEBUG
@@ -117,13 +121,15 @@ class Player(Entity):
                     pygame.event.clear()
                     self.updatecharacter(adventBoy_dead2)
                     pygame.event.post(pygame.event.Event(DEAD))
-                    break
+                    return True
                 if isinstance(p, Food):
+                    self.score += 100
                     if self.currentlifetotal < 9:
                         self.currentlifetotal += 1
                     print("1 UP")
                     p.animate()
                 if isinstance(p, KeyBlock):
+                    self.score += 1000
                     p.animate()
                     self.gotKey = p.getKeyStatus()
                 if xvel > 0:
@@ -169,6 +175,7 @@ class Player(Entity):
 
         for e in enemygroup:
             if pygame.sprite.collide_rect(self, e):
+                self.score += 10
                 self.fallingcount = 0
                 dif = self.rect.bottom - e.rect.top
                 if dif <= 8:
@@ -181,15 +188,19 @@ class Player(Entity):
                     self.currentlifetotal = self.currentlifetotal - 1
                     pygame.event.clear()
                     pygame.mixer.Sound('assets/ogg/ouch.ogg').play()
+                    left = False
+                    right = False
+                    up = False
                     if self.currentlifetotal <= 0:
                         self.currentlifetotal = 0
                         self.updatecharacter(adventBoy_dead2)
                         pygame.event.post(pygame.event.Event(DEAD))
+                        return True
                     else:
                         self.updatecharacter(adventBoy_dead1)
                         self.screen.blit(adventBoy_dead1, self.rect)
                         pygame.display.update(self.rect)
-                        continue
+                        return True
         return False
 
     def animate(self):
