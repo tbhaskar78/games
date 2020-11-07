@@ -1,8 +1,16 @@
-*Copyright attributions:
+## INSTRUCTIONS
 
-1. Exit door in the game levels are from 2D art work done by [Buch](http://blog-buch.rhcloud.com)
-2. Skeleton sprite used in intro is from artwork done by Irina Mir : https://opengameart.org/users/irmirx
-3. red flag, entry door, lamp and windows are from the art work done by https://opengameart.org/users/rubberduck
-4. candle, chandelier are from artwork done by PlatForge project and the artists: Summer Thaxton and Stafford McIntyre
-5. the background of castle is from https://images.alphacoders.com/960/96051.jpg
- 
+1. UP arrow for Jump. The hero can jump on enemies to kill them
+2. RIGHT and LEFT for directional walk
+4. There are 5 levels currently. I plan to add the final level and cutscene for victory and the rescue of Princess Peach
+
+## snap-shot of the title page
+
+   ![TITLE](assets/screenshots/screenshot1.png)
+   ![INTRO](assets/screenshots/screenshot2.png)
+   ![GAME_SCENE1](assets/screenshots/screenshot3.png)
+   ![GAME_SCENE2](assets/screenshots/screenshot4.png)
+   ![GAME_SCENE3](assets/screenshots/screenshot5.png)
+      
+
+
