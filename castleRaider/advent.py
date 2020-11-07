@@ -310,6 +310,8 @@ def main():
                     pp_sad2 = pygame.transform.scale(pp_sad2, (MULTIPLIER*2, 32*5))
                     pp_sad3= pygame.image.load('assets/img/pp_sad3.png')
                     pp_sad3 = pygame.transform.scale(pp_sad3, (MULTIPLIER*2, 32*5))
+
+                    #Copyright attribution: Skeleton sprite used in intro is from artwork done by Irina Mir (irmirx)
                     guard =  pygame.image.load("assets/img/guard1.png")
                     guard = pygame.transform.scale(guard, (MULTIPLIER*3, 32*5))
 
@@ -480,6 +482,7 @@ def drawCurtains(screen, levelIndex, text=None):
         pp_sad3= pygame.image.load('assets/img/pp_sad3.png')
         pp_sad3 = pygame.transform.scale(pp_sad3, (MULTIPLIER*2, 32*5))
         pp_sad= [pp_sad1, pp_sad2, pp_sad3]
+        #Copyright attribution: Skeleton sprite used is from artwork done by Irina Mir (irmirx)
         guard =  pygame.image.load("assets/img/guard1.png")
         guard = pygame.transform.scale(guard, (MULTIPLIER*3, 32*5))
         guard = pygame.transform.flip(guard, True, False)
