@@ -118,7 +118,7 @@ class CutSceneManager:
                     raise SystemExit("ESCAPE")
 
                 if event.type == pg.KEYDOWN:
-                    if event.key == pg.K_SPACE or event.key == pg.K_ESCAPE:
+                    if event.key == pg.K_SPACE:
                         print ("Cutscene cut short")
                         return
             self.start_cut_scene(CutSceneOne(self.player, self.screen))
@@ -177,7 +177,7 @@ class CutSceneManager:
         self.screen.blit(guard, (win_width/2+50, 330))
         self.screen.blit(pp_sad[self.indexCount%3], (win_width/2+200, 275))
         game_font = pg.font.Font("freesansbold.ttf", 16)
-        player_text = game_font.render("press SPACE/ESC to skip intro ", False, (255, 0, 0))
+        player_text = game_font.render("press SPACE to skip intro ", False, (255, 0, 0))
         self.screen.blit(player_text, (self.screen.get_width()-250,
                                        int(self.screen.get_height()-40)))
         if self.cut_scene_running:

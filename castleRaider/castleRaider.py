@@ -9,7 +9,7 @@ from assets.gamelib.cut_scenes import *
 level = [
        # LEVEL 1
        ["GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
-        "G                     L        E           G",
+        "G      H              L        E           G",
         "G    W                                W    G",
         "G                                     F    G",
         "G  C   PPP             PPPPPPPPPP          G",
@@ -36,7 +36,7 @@ level = [
 
        # LEVEL 2
        ["GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
-        "G          u         L                     G",
+        "G          u  H      L                     G",
         "GE                                         G",
         "G    W       PP                       W    G",
         "G         PPP                  GG     F  PPG",
@@ -47,9 +47,9 @@ level = [
         "G     GGd           PGG        GG       C  G",
         "G     PPPPPP         GG        GG          G",
         "G          PPPP      GG        GG          G",
-        "G                  PPGG    PPPPPP  PPPPPPPPG",
-        "GPPP     W          F                      G",
-        "G    C   F   C          d                  G",
+        "G        F         PPGG    PPPPPP  PPPPPPPPG",
+        "GPPP     W                                 G",
+        "G    C       C          d                  G",
         "G               PPPPPPPPP                  G",
         "G                 GG                       G",
         "G      P          GG                     K G",
@@ -75,7 +75,7 @@ level = [
         "G  PPPPPPPP         PGG     P  GG          G",
         "G       D            GG        GG       PPPG",
         "GP                   GG                    G",
-        "G     C  W    P   PGPGGPGP                 G",
+        "G  H  C  W    P   PGPGGPGP                 G",
         "G            P       GG PPP                G",
         "G  PP                GG D                  G",
         "G                    GG        PPPP         G",
@@ -93,7 +93,7 @@ level = [
         "G   D      u         L                D    G",
         "G                                          G",
         "G  CWC                              C W C  G",
-        "G   K   G    P                PGGP    F    G",
+        "GH  K   G    P                PGGP    F    G",
         "G       G                      GG          G",
         "G       GP              PPP    GG          G",
         "GGGGGGGGG                      GGPP      PPG",
@@ -117,7 +117,7 @@ level = [
 
        # LEVEL 5
        ["GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
-        "G       u            L        uu        K  G",
+        "G       u  H         L        uu        K  G",
         "G                                          G",
         "G C  W  C      PP           C  W  C   d   dG",
         "GPP       PPP       PP                PPPPPG",
@@ -161,7 +161,7 @@ def gameRoomBuild(screen, entities, platforms, levelIndex):
                 platforms.append(sp)
                 entities.add(sp)
             if col == "e":
-                p = Platform(x, y, "assets/img/entryDoor.png", 50, 100)
+                p = Platform(x, y, "assets/img/entryDoor.png", 40, 100)
                 platforms.append(p)
                 entities.add(p)
             if col == "f":
@@ -198,10 +198,14 @@ def gameRoomBuild(screen, entities, platforms, levelIndex):
                 keyObject = KeyBlock(x, y, screen)
                 platforms.append(keyObject)
                 entities.add(keyObject)
+            if col == "H": # food/Health
+                foodObject = Food(x, y, screen)
+                platforms.append(foodObject)
+                entities.add(foodObject)
             x += MULTIPLIER
         y += MULTIPLIER
         x = 0
-    return entities, platforms, keyObject, exitObject
+    return entities, platforms, keyObject, exitObject, foodObject
 
 def buildEntities(screen, platforms, entities, enemygroup, levelIndex,
                   maxLivesLeft):
@@ -221,15 +225,15 @@ def buildEntities(screen, platforms, entities, enemygroup, levelIndex,
         enemygroup.add(Bubble(MULTIPLIER*32, MULTIPLIER*9, screen))
 
     # build the level with player
-    player = Player(MULTIPLIER*2, MULTIPLIER*22, maxLivesLeft)
-    entities, platforms, keyObject, exitObject = gameRoomBuild(screen, entities, platforms, levelIndex)
+    player = Player(MULTIPLIER*2, MULTIPLIER*22, maxLivesLeft, screen)
+    entities, platforms, keyObject, exitObject, foodObject = gameRoomBuild(screen, entities, platforms, levelIndex)
 
     total_level_width  = len(level[levelIndex][0])*MULTIPLIER
     total_level_height = len(level[levelIndex])*MULTIPLIER
     camera = Camera(complex_camera, total_level_width, total_level_height)
     entities.add(player)
 
-    return platforms, entities, enemygroup, camera, player, keyObject, exitObject
+    return platforms, entities, enemygroup, camera, player, keyObject, exitObject, foodObject
 
 def main():
     global MULTIPLIER
@@ -288,7 +292,7 @@ def main():
                 entities.empty()
                 enemygroup.empty()
 
-                platforms, entities, enemygroup, camera, player, keyObject, exitObject  = buildEntities(screen,
+                platforms, entities, enemygroup, camera, player, keyObject, exitObject, foodObject  = buildEntities(screen,
                                                                                                         platforms,
                                                                                                         entities,
                                                                                                         enemygroup,
@@ -328,7 +332,15 @@ def main():
         elif nextLevel == False: # do not update anything if nextLevel is set to True
             # Process events
             for e in pygame.event.get():
-                if e.type == REDRAW_DOOR:
+                if e.type == ONE_UP:
+                    try:
+                        entities.remove(foodObject)
+                        platforms.remove(foodObject)
+                        del foodObject
+                    except:
+                        print("foodObject could not be removed")
+
+                elif e.type == REDRAW_DOOR:
                     try:
                         entities.remove(keyObject)
                         platforms.remove(keyObject)
@@ -590,7 +602,7 @@ def title_scene(screen):
                 raise SystemExit("ESCAPE")
 
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_SPACE or event.key == pg.K_ESCAPE:
+                if event.key == pg.K_SPACE:
                     print ("Cutscene cut short")
                     return
         screen.blit(bg,(0,0))
@@ -609,7 +621,7 @@ def title_scene(screen):
         screen.blit(player_text, (screen.get_width()/2-50, int(screen.get_height()/2)))
 
         game_font = pg.font.Font("freesansbold.ttf", 16)
-        player_text = game_font.render("press SPACE/ESC to skip intro ", False, (255, 0, 0))
+        player_text = game_font.render("press SPACE to skip intro ", False, (255, 0, 0))
         screen.blit(player_text, (screen.get_width()-250,
                                        int(screen.get_height()-40)))
 

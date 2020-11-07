@@ -15,6 +15,7 @@ DEAD = pygame.USEREVENT + 1
 NEXT_LEVEL = pygame.USEREVENT + 2
 HURT = pygame.USEREVENT + 3
 REDRAW_DOOR = pygame.USEREVENT + 4
+ONE_UP = pygame.USEREVENT + 5
 MULTIPLIER = (16*3)
 WHITE_COLOR = (255, 255, 204)
 
@@ -94,8 +95,8 @@ bubblewalk2 = character
 character = Surface((20,20),pygame.SRCALPHA)
 character.blit(spritesheet,(-46,-253))
 character = pygame.transform.scale(character, (MULTIPLIER,MULTIPLIER))
-#character = pygame.transform.flip(character, True, False)
 bubbleblast = character
+character = pygame.transform.scale(character, (MULTIPLIER*2,MULTIPLIER*2))
 adventBoy_dead1 = character
 adventBoy_dead2 = character
 

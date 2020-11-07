@@ -31,7 +31,7 @@ class Entity(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
 class Player(Entity):
-    def __init__(self, x, y, livesLeft):
+    def __init__(self, x, y, livesLeft, screen):
         Entity.__init__(self)
         self.xvel = 0
         self.yvel = 0
@@ -42,12 +42,13 @@ class Player(Entity):
         self.counter = 0
         self.fallingcount = 0
         self.image = adventBoy_stand1
-        self.rect = Rect(x, y, MULTIPLIER+30, 32*3) #16*3, 32*4-35)
+        self.rect = Rect(x, y, MULTIPLIER+10, 32*3) #16*3, 32*4-35)
         self.lifetotal = ["", "l", "ll", "lll", "llll", "lllll", "llllll", "lllllll", "llllllll", "lllllllll"]
         self.currentlifetotal = 9
         self.maxLives = livesLeft
         self.key = False
         self.gotKey = False
+        self.screen = screen
 
     def update(self, up, down, left, right, running, platforms, enemygroup):
         if up:
@@ -82,6 +83,9 @@ class Player(Entity):
         self.rect.left += self.xvel
         # do x-axis collisions
         if self.collide(self.xvel, 0, platforms, enemygroup) == False:
+            left = False
+            right = False
+            up  = False
             # increment in y direction
             self.rect.top += self.yvel
             # assuming we're in the air
@@ -90,6 +94,9 @@ class Player(Entity):
             # do y-axis collisions
             if self.collide(0, self.yvel, platforms, enemygroup) == False:
                 self.animate()
+                left = False
+                right = False
+                up  = False
 
     def collide(self, xvel, yvel, platforms, enemygroup):
         global DEBUG
@@ -111,6 +118,11 @@ class Player(Entity):
                     self.updatecharacter(adventBoy_dead2)
                     pygame.event.post(pygame.event.Event(DEAD))
                     break
+                if isinstance(p, Food):
+                    if self.currentlifetotal < 9:
+                        self.currentlifetotal += 1
+                    print("1 UP")
+                    p.animate()
                 if isinstance(p, KeyBlock):
                     p.animate()
                     self.gotKey = p.getKeyStatus()
@@ -126,21 +138,21 @@ class Player(Entity):
                     self.rect.bottom = p.rect.top
                     self.onGround = True
                     if self.fallingcount >= 115:
-                        self.currentlifetotal -= 1
-                        if self.currentlifetotal <= 0:
-                            self.currentlifetotal = 0
-                            self.updatecharacter(adventBoy_dead2)
-                            pygame.event.post(pygame.event.Event(DEAD))
-                        else:
-                            self.updatecharacter(adventBoy_dead1)
-                            pygame.event.post(pygame.event.Event(HURT))
+                            self.currentlifetotal -= 1
+                            if self.currentlifetotal <= 0:
+                                self.currentlifetotal = 0
+                                self.updatecharacter(adventBoy_dead2)
+                                pygame.event.post(pygame.event.Event(DEAD))
+                            else:
+                                self.updatecharacter(adventBoy_dead1)
+                                pygame.event.post(pygame.event.Event(HURT))
                     self.fallingcount = 0
                     self.airborne = False
                     self.yvel = 0
                 if yvel < 0:
                     self.rect.top = p.rect.bottom
 
-        if self.takingdamage:
+        if self.takingdamage == True:
             if self.faceright == False:
                 self.faceright = True
             else:
@@ -157,22 +169,26 @@ class Player(Entity):
 
         for e in enemygroup:
             if pygame.sprite.collide_rect(self, e):
+                self.fallingcount = 0
                 dif = self.rect.bottom - e.rect.top
                 if dif <= 8:
                     self.yvel = -8
                 elif self.takingdamage == False:
                     self.takingdamage = True
-                    e.destroy_now()  # destroy the enemy because of the hit
-                    self.currentlifetotal = self.currentlifetotal - 0
+                    # destroy the enemy because of the hit
+                    e.destroy_now()
+
+                    self.currentlifetotal = self.currentlifetotal - 1
                     pygame.event.clear()
-                    pygame.mixer.Sound('assets/ogg/fail.ogg').play()
+                    pygame.mixer.Sound('assets/ogg/ouch.ogg').play()
                     if self.currentlifetotal <= 0:
                         self.currentlifetotal = 0
                         self.updatecharacter(adventBoy_dead2)
                         pygame.event.post(pygame.event.Event(DEAD))
                     else:
-                        #self.updatecharacter(adventBoy_dead1)
-                        self.updatecharacter(bubbleblast)
+                        self.updatecharacter(adventBoy_dead1)
+                        self.screen.blit(adventBoy_dead1, self.rect)
+                        pygame.display.update(self.rect)
                         continue
         return False
 
@@ -180,7 +196,7 @@ class Player(Entity):
         try:
             if self.xvel > 0 or self.xvel < 0:
                 self.walkloop()
-                if self.airborne: 
+                if self.airborne:
                     self.updatecharacter(adventBoy_jump1)
             else:
                 self.updatecharacter(adventBoy_stand1)
@@ -482,6 +498,22 @@ class KeyBlock(Platform):
             return True
         else:
             return False
+
+class Food(Platform):
+    def __init__(self, x, y, screen):
+        self.screen = screen
+        self.x = x
+        self.y = y
+        self.dimx = 16*3
+        self.dimy = 16*3
+        self.image = Platform.__init__(self, x, y, "assets/img/doughnut.png", self.dimx,
+                          self.dimy, True)
+        #self.image.fill(Color("#0033FF"))
+
+    def animate(self):
+        pygame.mixer.Sound('assets/ogg/success.ogg').play()
+        pygame.event.post(pygame.event.Event(ONE_UP))
+
 
 class SpearBlock(Platform):
     def __init__(self, x, y, screen, filename):
