@@ -1,3 +1,5 @@
+*Player artwork created by Bhaskar Tallamraju: available here https://opengameart.org/content/boy-adventurer
+
 ## INSTRUCTIONS
 
 1. UP arrow for Jump. The hero can jump on enemies to kill them
